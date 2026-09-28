@@ -15,7 +15,7 @@ SplitPresetsModel::SplitPresetsModel(std::shared_ptr<Settings> settings, const Q
     const QStringList enabled = m_settings->splitPresetsEnabled();
     m_enabledPresets = QSet<QString>(enabled.begin(), enabled.end());
     loadFromCache();
-    appendBuiltinPresets();
+    rebuildMergedPresets();
 }
 
 int SplitPresetsModel::rowCount(const QModelIndex &parent) const
@@ -68,8 +68,6 @@ void SplitPresetsModel::setRouteMode(int routeMode)
 
 void SplitPresetsModel::fetchPresets()
 {
-    // the presets catalog is public (no auth, like news) — no gateway stacks
-    // required: users with manually added configs must get presets too
     qDebug() << "[PRESETS] fetching, cached version:" << m_version;
 
     auto gatewayController = QSharedPointer<GatewayController>::create(m_settings->getGatewayEndpoint(), m_settings->isDevGatewayEnv(),
@@ -77,11 +75,7 @@ void SplitPresetsModel::fetchPresets()
                                                                        nullptr, m_settings->getGatewayEndpointFallback());
     QJsonObject payload;
     payload.insert("locale", m_settings->getAppLanguage().name().split("_").first());
-    // send the cached version only when we actually hold the preset list:
-    // the server treats a matching version as "client cache is fresh" and
-    // returns an empty catalog — with an empty local list that would leave
-    // the user with no presets forever
-    if (!m_version.isEmpty() && !m_presets.isEmpty()) {
+    if (!m_version.isEmpty() && !m_apiPresets.isEmpty()) {
         payload.insert("presets_version", m_version);
     }
 
@@ -90,7 +84,6 @@ void SplitPresetsModel::fetchPresets()
         const auto [errorCode, responseBody] = result;
         if (errorCode != ErrorCode::NoError) {
             qWarning() << "[PRESETS] fetch failed:" << static_cast<int>(errorCode);
-            // silent: cached presets stay in effect
             emit fetchPresetsFinished();
             return;
         }
@@ -100,30 +93,21 @@ void SplitPresetsModel::fetchPresets()
         const QJsonArray presetsArray = obj.value("presets").toArray();
         qDebug() << "[PRESETS] response: version" << newVersion << "count" << presetsArray.size();
 
-        // empty list with the same version = cache is still valid
         if (!newVersion.isEmpty() && newVersion == m_version && presetsArray.isEmpty()) {
             emit fetchPresetsFinished();
             return;
         }
 
         beginResetModel();
-        m_presets.clear();
+        m_apiPresets.clear();
         for (const auto &value : presetsArray) {
-            const QJsonObject presetObj = value.toObject();
-            Preset preset;
-            preset.id = presetObj.value("id").toString();
-            preset.name = presetObj.value("name").toString();
-            preset.description = presetObj.value("description").toString();
-            const QJsonArray domains = presetObj.value("domains").toArray();
-            for (const auto &domain : domains) {
-                preset.domains.append(domain.toString());
-            }
+            const Preset preset = presetFromJson(value.toObject());
             if (!preset.id.isEmpty() && !preset.domains.isEmpty()) {
-                m_presets.append(preset);
+                m_apiPresets.append(preset);
             }
         }
-        appendBuiltinPresets();
         m_version = newVersion;
+        rebuildMergedPresets();
         endResetModel();
 
         saveToCache();
@@ -161,82 +145,70 @@ void SplitPresetsModel::loadFromCache()
     m_version = m_settings->splitPresetsVersion();
     const QByteArray cache = m_settings->splitPresetsCache().toUtf8();
     if (cache.isEmpty()) {
-        // a stored version without the preset list is useless — refetch fresh
         m_version.clear();
         return;
     }
 
     const QJsonArray presetsArray = QJsonDocument::fromJson(cache).array();
     for (const auto &value : presetsArray) {
-        const QJsonObject presetObj = value.toObject();
-        Preset preset;
-        preset.id = presetObj.value("id").toString();
-        preset.name = presetObj.value("name").toString();
-        preset.description = presetObj.value("description").toString();
-        const QJsonArray domains = presetObj.value("domains").toArray();
-        for (const auto &domain : domains) {
-            preset.domains.append(domain.toString());
+        const Preset preset = presetFromJson(value.toObject());
+        if (!preset.id.isEmpty() && !preset.domains.isEmpty()) {
+            m_apiPresets.append(preset);
         }
+    }
+}
+
+void SplitPresetsModel::rebuildMergedPresets()
+{
+    QJsonArray apiArray;
+    for (const Preset &preset : m_apiPresets) {
+        apiArray.append(presetToJson(preset));
+    }
+
+    m_presets.clear();
+    const QJsonArray merged = BuiltinSplitPresets::mergeWithApi(apiArray);
+    for (const auto &value : merged) {
+        const Preset preset = presetFromJson(value.toObject());
         if (!preset.id.isEmpty() && !preset.domains.isEmpty()) {
             m_presets.append(preset);
         }
     }
 }
 
-void SplitPresetsModel::appendBuiltinPresets()
-{
-    // builtin presets go FIRST in the list: they are our own RU routing
-    // shortcuts and should be visible above the API catalog
-    QList<Preset> builtin;
-    for (const auto &value : BuiltinSplitPresets::presets()) {
-        const QJsonObject presetObj = value.toObject();
-        Preset preset;
-        preset.id = presetObj.value("id").toString();
-        // an API preset with the same id wins
-        bool duplicate = false;
-        for (const auto &existing : m_presets) {
-            if (existing.id == preset.id) {
-                duplicate = true;
-                break;
-            }
-        }
-        if (duplicate) {
-            continue;
-        }
-        preset.name = presetObj.value("name").toString();
-        preset.description = presetObj.value("description").toString();
-        const QJsonArray domains = presetObj.value("domains").toArray();
-        for (const auto &domain : domains) {
-            preset.domains.append(domain.toString());
-        }
-        if (!preset.id.isEmpty() && !preset.domains.isEmpty()) {
-            m_builtinIds.insert(preset.id);
-            builtin.append(preset);
-        }
-    }
-    for (int i = builtin.size() - 1; i >= 0; --i) {
-        m_presets.prepend(builtin.at(i));
-    }
-}
-
 void SplitPresetsModel::saveToCache() const
 {
     QJsonArray presetsArray;
-    for (const auto &preset : m_presets) {
-        // the cache mirrors the API catalog (and its version) — builtin presets
-        // are merged in code and must not be persisted there
-        if (m_builtinIds.contains(preset.id)) {
-            continue;
-        }
-        QJsonObject presetObj;
-        presetObj.insert("id", preset.id);
-        presetObj.insert("name", preset.name);
-        if (!preset.description.isEmpty()) {
-            presetObj.insert("description", preset.description);
-        }
-        presetObj.insert("domains", QJsonArray::fromStringList(preset.domains));
-        presetsArray.append(presetObj);
+    for (const Preset &preset : m_apiPresets) {
+        presetsArray.append(presetToJson(preset));
     }
     m_settings->setSplitPresetsCache(QString::fromUtf8(QJsonDocument(presetsArray).toJson(QJsonDocument::Compact)));
     m_settings->setSplitPresetsVersion(m_version);
+}
+
+SplitPresetsModel::Preset SplitPresetsModel::presetFromJson(const QJsonObject &presetObj)
+{
+    Preset preset;
+    preset.id = presetObj.value("id").toString();
+    preset.name = presetObj.value("name").toString();
+    preset.description = presetObj.value("description").toString();
+    const QJsonArray domains = presetObj.value("domains").toArray();
+    for (const auto &domain : domains) {
+        const QString entry = domain.toString();
+        if (!entry.isEmpty()) {
+            preset.domains.append(entry);
+        }
+    }
+    return preset;
+}
+
+QJsonObject SplitPresetsModel::presetToJson(const Preset &preset)
+{
+    QJsonObject presetObj;
+    presetObj.insert("id", preset.id);
+    presetObj.insert("name", preset.name);
+    if (!preset.description.isEmpty()) {
+        presetObj.insert("description", preset.description);
+    }
+    presetObj.insert("domains", QJsonArray::fromStringList(preset.domains));
+    return presetObj;
 }

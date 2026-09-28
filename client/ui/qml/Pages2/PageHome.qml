@@ -198,9 +198,14 @@ PageType {
 
                             CaptionTextType {
                                 Layout.fillWidth: true
+                                Layout.preferredWidth: 160
+                                Layout.minimumWidth: 80
 
                                 color: DopamineStyle.color.mutedGray
                                 font.pixelSize: 13
+                                wrapMode: Text.NoWrap
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
 
                                 text: "↓ " + ConnectionController.downloadSpeed
                                       + "   ↑ " + ConnectionController.uploadSpeed
@@ -266,18 +271,14 @@ PageType {
                         ServersModel.processedIndex = ServersModel.defaultIndex
 
                         if (ServersModel.getProcessedServerData("isServerFromGatewayApi")) {
-                            if (ServersModel.getProcessedServerData("isCountrySelectionAvailable")) {
-                                PageController.goToPage(PageEnum.PageSettingsApiAvailableCountries)
-                            } else {
-                                PageController.showBusyIndicator(true)
-                                let result = ApiSettingsController.getAccountInfo(false)
-                                PageController.showBusyIndicator(false)
-                                if (!result) {
-                                    return
-                                }
-
-                                PageController.goToPage(PageEnum.PageSettingsApiServerInfo)
+                            PageController.showBusyIndicator(true)
+                            let result = ApiSettingsController.getAccountInfo(false)
+                            PageController.showBusyIndicator(false)
+                            if (!result) {
+                                return
                             }
+
+                            PageController.goToPage(PageEnum.PageSettingsApiServerInfo)
                         } else {
                             PageController.goToPage(PageEnum.PageSettingsServerInfo)
                         }

@@ -29,7 +29,6 @@ namespace PageLoader
         PageSettingsAppSplitTunneling,
         PageSettingsKillSwitch,
         PageSettingsApiServerInfo,
-        PageSettingsApiAvailableCountries,
         PageSettingsApiSupport,
         PageSettingsApiInstructions,
         PageSettingsApiNativeConfigs,

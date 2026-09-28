@@ -2,16 +2,13 @@
 #define SPLITPRESETSMODEL_H
 
 #include <QAbstractListModel>
+#include <QJsonObject>
 #include <QSet>
 #include <QSharedPointer>
 
 #include "settings.h"
 #include "servers_model.h"
 
-// Split-tunneling service presets (see frkn-docs/api-split-presets.md):
-// bundles of domains per service (YouTube, ChatGPT, ...) fetched from the
-// gateway. Enabled presets and the section direction are stored here; the
-// actual include/exclude sets are computed at connect time (vpnconnection).
 class SplitPresetsModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -62,16 +59,18 @@ private:
     };
 
     void loadFromCache();
-    void appendBuiltinPresets();
+    void rebuildMergedPresets();
     void saveToCache() const;
+    static Preset presetFromJson(const QJsonObject &presetObj);
+    static QJsonObject presetToJson(const Preset &preset);
 
     std::shared_ptr<Settings> m_settings;
     QSharedPointer<ServersModel> m_serversModel;
 
+    QList<Preset> m_apiPresets;
     QList<Preset> m_presets;
-    QSet<QString> m_builtinIds; // merged from code, never written to the API cache
     QSet<QString> m_enabledPresets;
     QString m_version;
 };
 
-#endif // SPLITPRESETSMODEL_H
+#endif

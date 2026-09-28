@@ -173,7 +173,6 @@
         <file>ui/qml/Pages2/PageHome.qml</file>
         <file>ui/qml/Pages2/PageSettings.qml</file>
         <file>ui/qml/Pages2/PageSettingsAbout.qml</file>
-        <file>ui/qml/Pages2/PageSettingsApiAvailableCountries.qml</file>
         <file>ui/qml/Pages2/PageSettingsApiServerInfo.qml</file>
         <file>ui/qml/Pages2/PageSettingsApplication.qml</file>
         <file>ui/qml/Pages2/PageSettingsAppSplitTunneling.qml</file>

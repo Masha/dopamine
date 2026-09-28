@@ -107,22 +107,37 @@ Fields:
 
 Domain semantics (must match the client's site list):
 
-- `googlevideo.com` covers `r1---sn-abc.googlevideo.com` and any other subdomain.
-- Domains only — no IPs, no CIDRs, no paths.
+- Hostnames preferred; CIDRs are allowed (e.g. VK ranges) and applied as
+  routes without DNS.
 - Keep bundles conservative: a preset must not accidentally cover half the
   internet (avoid `google.com`, `cloudflare.com` etc.). Prefer specific
   service domains over shared corporate parents.
 
+## Builtin ∪ API merge (client)
+
+The Dopamine client ships offline baselines for major services and FRKN
+routing packs. At fetch/connect time it builds:
+
+`domains_effective = unique(builtin_domains ∪ api_domains)` for the same `id`.
+
+| Builtin id | Notes |
+|---|---|
+| `builtin-ru-direct`, `builtin-ru-banking`, `builtin-ru-vpn`, `builtin-ai` | Client-only. **Do not** publish these ids from the API. |
+| `youtube`, `instagram`, `tiktok`, `x`, `facebook`, `whatsapp`, `telegram`, `netflix`, `spotify`, `discord` | Same ids on API → union. Publish **deltas** (new hosts/CIDRs) under the same id; full lists are fine (client dedupes). |
+
+Do **not** invent parallel ids (`builtin-youtube`). Do **not** ship `twinby`
+(remove from prod if present).
+
+Details for the backend team: `frkn-docs/split-presets-backend.md`.
+
 Semantics:
 
 - Empty list → `{ "version": "...", "presets": [] }` with HTTP 200 is the
-  normal «nothing configured» case, not an error.
-- The client applies toggles into the existing split-tunneling site list:
-  enabling a preset adds all its domains (tagged with the preset id),
-  disabling removes exactly those domains. Manually added domains are untouched.
-- Sorting as sent; the client renders presets in response order.
-- Cache-friendly: the client fetches silently on app start (when a
-  subscription server exists) and when the user opens split-tunneling settings.
+  normal «nothing configured» case, not an error (client still shows builtins).
+- Toggle state (`preset id → on/off`) is stored locally per device.
+- API catalog order is preserved for API rows; client-only builtins are listed
+  above. Cache stores the API payload only (builtins are merged in memory).
+- Cache-friendly: silent fetch on app start / when opening split-tunneling settings.
 
 ## Errors
 
@@ -141,19 +156,14 @@ Avoid `404` / `409` / `501` (special semantics in other client flows).
 | `chatgpt` | ChatGPT | see example above |
 | `gemini` | Gemini | see example above |
 | `ai` | AI | Combined bundle: ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Grok. Optional `description` lists the brands. Prefer this over shipping six separate AI toggles for most users. |
-| `instagram` | Instagram | see example above |
-| `tiktok` | TikTok | tiktok.com, tiktokv.com, tiktokcdn.com, musical.ly |
-| `x` | X (Twitter) | x.com, twitter.com, twimg.com, t.co |
-| `facebook` | Facebook | facebook.com, fb.com, fbcdn.net, fbsbx.com |
-| `whatsapp` | WhatsApp | whatsapp.com, whatsapp.net |
-| `telegram` | Telegram | telegram.org, t.me, telegra.ph, cdn-telegram.org |
-| `netflix` | Netflix | netflix.com, nflxvideo.net, nflximg.net, nflxext.com |
-| `spotify` | Spotify | spotify.com, scdn.co, spotifycdn.net |
-| `discord` | Discord | discord.com, discord.gg, discordapp.com, discordcdn.com |
+| `erudit` | Эрудит | API-only. See `frkn-docs/split-preset-erudit.md`. |
+| `instagram` … `discord` | (major services) | Same ids as client builtins → union. |
+| `vk` | VK | API-only (domains + CIDRs). |
+| ~~`twinby`~~ | — | **Remove** from prod. |
 
 Review each bundle against the «conservative» rule above before publishing.
 
-The Dopamine client also ships a builtin `builtin-ai` preset with the same six services (no API deploy required).
+See `frkn-docs/split-presets-backend.md` for the full backend checklist.
 
 ## Client flow (for context)
 

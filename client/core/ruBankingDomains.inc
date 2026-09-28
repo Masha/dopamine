@@ -6,10 +6,20 @@
     "tinkoff.ru", "www.tbank.ru", "www.tinkoff.ru",
 
     "alfa.me", "alfabank.ru", "alfabank.st", "gazprombank.ru", "gpb.ru",
-    "m.alfabank.ru", "m.gazprombank.ru", "m.psb.ru", "m.raiffeisen.ru", "m.vtb.ru",
-    "psb.ru", "psbank.ru", "raiffeisen.ru", "vtb.ru",
-    "www.alfabank.ru", "www.gazprombank.ru", "www.psb.ru", "www.raiffeisen.ru",
+    "m.alfabank.ru", "m.gazprombank.ru", "m.psb.ru", "m.vtb.ru",
+    "psb.ru", "psbank.ru", "vtb.ru",
+    "www.alfabank.ru", "www.gazprombank.ru", "www.psb.ru",
     "www.vtb.ru",
+
+    "acs.raiffeisen.ru", "acsx.raiffeisen.ru", "amobile.raiffeisen.ru",
+    "api.raiffeisen.ru", "cdn-rf.raiffeisen.ru", "creq-brw-prod.raiffeisen.ru",
+    "debitcards.raiffeisen.ru", "digital-onboarding.rbo.raiffeisen.ru",
+    "ebs.raiffeisen.ru", "gql.rbo.raiffeisen.ru", "id.raiffeisen.ru",
+    "imobile.raiffeisen.ru", "mau.raiffeisen.ru", "m.raiffeisen.ru",
+    "oapi.raiffeisen.ru", "oidc.raiffeisen.ru", "online.raiffeisen.ru",
+    "payments.raiffeisen.ru", "r-chat.raiffeisen.ru", "raiffeisen.ru",
+    "rbo.raiffeisen.ru", "secure.raiffeisen.ru", "sessions.raiffeisen.ru",
+    "www.raiffeisen.ru",
 
     "akbars.ru", "bspb.ru", "domrfbank.ru", "homecredit.ru", "mkb.ru",
     "m.mtsbank.ru", "m.rshb.ru", "m.sovcombank.ru",

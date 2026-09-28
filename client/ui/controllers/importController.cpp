@@ -57,9 +57,6 @@ namespace
 
     ConfigTypes checkConfigFormat(const QString &config)
     {
-        const QString wireguardConfigPatternSectionInterface = "[Interface]";
-        const QString wireguardConfigPatternSectionPeer = "[Peer]";
-
         const QString xrayConfigPatternInbound = "inbounds";
         const QString xrayConfigPatternOutbound = "outbounds";
 
@@ -78,7 +75,7 @@ namespace
                    || (config.contains(amneziaConfigPatternHostName) && config.contains(amneziaConfigPatternUserName)
                        && config.contains(amneziaConfigPatternPassword))) {
             return ConfigTypes::Amnezia;
-        } else if (config.contains(wireguardConfigPatternSectionInterface) && config.contains(wireguardConfigPatternSectionPeer)) {
+        } else if (config.toLower().contains(QLatin1String("[interface]")) && config.toLower().contains(QLatin1String("[peer]"))) {
             return ConfigTypes::WireGuard;
         } else if ((config.contains(xrayConfigPatternInbound)) && (config.contains(xrayConfigPatternOutbound))) {
             return ConfigTypes::Xray;
@@ -121,6 +118,9 @@ bool ImportController::extractConfigFromData(QString data)
     m_maliciousWarningText.clear();
 
     QString config = data;
+    if (config.startsWith(QChar(0xFEFF))) {
+        config.remove(0, 1);
+    }
     QString prefix;
     QString errormsg;
 
@@ -264,14 +264,17 @@ bool ImportController::extractConfigFromData(QString data)
         }
     }
 
-    // None of the branches above matched — the text neither looks like a key,
-    // a share/subscription link, a UUID, an Xray subscription URL, nor a known
-    // Amnezia/Qt config block. Tell the user explicitly instead of letting it
-    // fall through to the generic "Что-то с интернетом" path.
-    const QString unrecognized = config.trimmed();
-    if (!unrecognized.isEmpty()) {
-        emit unknownFormatDetected(unrecognized);
-        return false;
+    const QString lowered = config.toLower();
+    const bool staticConfig = (lowered.contains(QLatin1String("[interface]")) && lowered.contains(QLatin1String("[peer]")))
+            || config.contains(QLatin1String("vpn://"))
+            || config.contains(QLatin1String("\"containers\""))
+            || config.contains(QLatin1String("Servers/serversList"));
+    if (!staticConfig) {
+        const QString unrecognized = config.trimmed();
+        if (!unrecognized.isEmpty()) {
+            emit unknownFormatDetected(unrecognized);
+            return false;
+        }
     }
 
     m_configType = checkConfigFormat(config);
@@ -469,13 +472,19 @@ QJsonObject ImportController::extractWireGuardConfig(const QString &data)
     QMap<QString, QString> configMap;
     auto configByLines = data.split("\n");
     for (const QString &line : configByLines) {
-        QString trimmedLine = line.trimmed();
-        if (trimmedLine.startsWith("[") && trimmedLine.endsWith("]")) {
+        const QString trimmedLine = line.trimmed();
+        if (trimmedLine.isEmpty() || trimmedLine.startsWith('#') || trimmedLine.startsWith(';')) {
             continue;
-        } else {
-            QStringList parts = trimmedLine.split(" = ");
-            if (parts.count() == 2) {
-                configMap[parts.at(0).trimmed()] = parts.at(1).trimmed();
+        }
+        if (trimmedLine.startsWith('[') && trimmedLine.endsWith(']')) {
+            continue;
+        }
+        const int eq = trimmedLine.indexOf('=');
+        if (eq > 0) {
+            const QString key = trimmedLine.left(eq).trimmed();
+            const QString value = trimmedLine.mid(eq + 1).trimmed();
+            if (!key.isEmpty() && !value.isEmpty()) {
+                configMap[key] = value;
             }
         }
     }
@@ -528,9 +537,14 @@ QJsonObject ImportController::extractWireGuardConfig(const QString &data)
         lastConfig[config_key::persistent_keep_alive] = configMap.value("PersistentKeepalive");
     }
 
-    QJsonArray allowedIpsJsonArray = QJsonArray::fromStringList(configMap.value("AllowedIPs").split(", "));
-
-    lastConfig[config_key::allowed_ips] = allowedIpsJsonArray;
+    QStringList allowedIps;
+    for (const QString &ip : configMap.value(QStringLiteral("AllowedIPs")).split(',')) {
+        const QString trimmed = ip.trimmed();
+        if (!trimmed.isEmpty()) {
+            allowedIps << trimmed;
+        }
+    }
+    lastConfig[config_key::allowed_ips] = QJsonArray::fromStringList(allowedIps);
 
     QString protocolName = "wireguard";
     QString protocolVersion;
@@ -618,15 +632,14 @@ QJsonObject ImportController::extractWireGuardConfig(const QString &data)
     QJsonObject config;
     config[config_key::containers] = arr;
     config[config_key::defaultContainer] = "amnezia-" + protocolName;
-    config[config_key::description] = m_settings->nextAvailableServerName();
+    config[config_key::description] = hostName.isEmpty() ? m_settings->nextAvailableServerName() : hostName;
 
-    const static QRegularExpression dnsRegExp(
-            "DNS = "
-            "(\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b).*(\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b)");
-    QRegularExpressionMatch dnsMatch = dnsRegExp.match(data);
-    if (dnsMatch.hasMatch()) {
-        config[config_key::dns1] = dnsMatch.captured(1);
-        config[config_key::dns2] = dnsMatch.captured(2);
+    const QStringList dnsList = configMap.value(QStringLiteral("DNS")).split(',');
+    if (!dnsList.isEmpty() && !dnsList.at(0).trimmed().isEmpty()) {
+        config[config_key::dns1] = dnsList.at(0).trimmed();
+    }
+    if (dnsList.size() > 1 && !dnsList.at(1).trimmed().isEmpty()) {
+        config[config_key::dns2] = dnsList.at(1).trimmed();
     }
 
     config[config_key::hostName] = hostName;

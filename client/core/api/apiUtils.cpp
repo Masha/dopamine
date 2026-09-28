@@ -111,17 +111,23 @@ amnezia::ErrorCode apiUtils::checkNetworkReplyErrors(const QList<QSslError> &ssl
         qDebug() << httpStatusCode;
 
         int httpStatusFromBody = -1;
+        QString messageFromBody;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(responseBody);
         if (jsonDoc.isObject()) {
             QJsonObject jsonObj = jsonDoc.object();
             httpStatusFromBody = jsonObj.value("http_status").toInt(-1);
+            if (httpStatusFromBody < 0) {
+                httpStatusFromBody = jsonObj.value("status").toInt(-1);
+            }
+            messageFromBody = jsonObj.value("message").toString();
         }
+        const int effectiveStatus = httpStatusFromBody > 0 ? httpStatusFromBody : httpStatusCode;
 
-        if (httpStatusFromBody == httpStatusCodeConflict) {
+        if (effectiveStatus == httpStatusCodeConflict) {
             return amnezia::ErrorCode::ApiConfigLimitError;
-        } else if (httpStatusFromBody == httpStatusCodeNotFound) {
+        } else if (effectiveStatus == httpStatusCodeNotFound || messageFromBody == QLatin1String("node_not_found")) {
             return amnezia::ErrorCode::ApiNotFoundError;
-        } else if (httpStatusFromBody == httpStatusCodeNotImplemented) {
+        } else if (effectiveStatus == httpStatusCodeNotImplemented) {
             return amnezia::ErrorCode::ApiUpdateRequestError;
         }
         return amnezia::ErrorCode::ApiConfigDownloadError;

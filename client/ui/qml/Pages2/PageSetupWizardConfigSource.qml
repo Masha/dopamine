@@ -84,7 +84,7 @@ PageType {
 
         function onUnknownFormatDetected(rawInput) {
             PageController.showBusyIndicator(false)
-            PageController.showErrorMessage(qsTr("Unrecognized input — paste an activation key, frkn:// link, subscription UUID or vless:// configuration"))
+            PageController.showErrorMessage(qsTr("Unrecognized input — paste an activation key, frkn:// link, subscription UUID, vless:// configuration, or a WireGuard/Amnezia config"))
         }
     }
 
@@ -229,7 +229,7 @@ PageType {
                 Layout.leftMargin: 16
                 Layout.bottomMargin: 24
 
-                text: qsTr("Insert the key, add a configuration file or scan the QR-code")
+                text: qsTr("Insert a key or a WireGuard/Amnezia config, add a file, or scan the QR-code")
             }
 
             TextFieldWithHeaderType {
@@ -239,12 +239,12 @@ PageType {
                 Layout.rightMargin: 16
                 Layout.leftMargin: 16
 
-                headerText: qsTr("Insert key")
+                headerText: qsTr("Key or config")
                 buttonText: qsTr("Insert")
+                multiline: true
 
                 clickedFunc: function() {
-                    textField.text = ""
-                    textField.paste()
+                    textKey.insertFromClipboard()
                 }
             }
 
@@ -256,12 +256,12 @@ PageType {
                 Layout.rightMargin: 16
                 Layout.leftMargin: 16
 
-                visible: textKey.textField.text !== ""
+                visible: textKey.inputText !== ""
 
                 text: qsTr("Continue")
 
                 clickedFunc: function() {
-                    var inputText = textKey.textField.text.trim()
+                    var inputText = textKey.inputText.trim()
                     if (ImportController.extractConfigFromData(inputText)) {
                         ImportController.queueConfigForConfirmation()
                     } else {

@@ -137,11 +137,15 @@ bool ApiSettingsController::getAccountInfo(bool reload, bool forceRefresh)
     // async: the UI thread must not block on the gateway round-trip; the result
     // is applied from the continuation (cache/inFlight bookkeeping lives there)
     auto future = gatewayController->postAsync(QString("%1v1/account_info"), apiPayload);
-    future.then(this, [this, gatewayController, processedIndex, serverConfig, reload](QPair<ErrorCode, QByteArray> result) {
+    future.then(this, [this, gatewayController, processedIndex, serverConfig, reload, forceRefresh](QPair<ErrorCode, QByteArray> result) {
         const auto [errorCode, responseBody] = result;
         m_accountInfoInFlight.remove(processedIndex);
         if (errorCode != ErrorCode::NoError) {
-            emit errorOccurred(errorCode);
+            if (forceRefresh) {
+                emit errorOccurred(errorCode);
+            } else {
+                qWarning() << "[ACCOUNT INFO] background fetch failed:" << static_cast<int>(errorCode);
+            }
             return;
         }
         // the user may have switched to another server while the request was in

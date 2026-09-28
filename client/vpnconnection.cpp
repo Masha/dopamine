@@ -62,16 +62,21 @@ VpnConnection::VpnConnection(std::shared_ptr<Settings> settings, QObject *parent
     // own and the speed meter dies (arrows, no numbers) until a reconnect.
     // Self-heal on return to foreground.
     connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
-        if (state == Qt::ApplicationActive
-            && (m_connectionState == Vpn::ConnectionState::Connected
-                || m_connectionState == Vpn::ConnectionState::Reconnecting)) {
-            IosController::Instance()->clearStatusRequest();
-            if (!m_checkTimer.isActive()) {
-                m_checkTimer.start();
-            }
-            QMetaObject::invokeMethod(IosController::Instance(), []() { IosController::Instance()->checkStatus(); },
-                                      Qt::QueuedConnection);
+        if (state != Qt::ApplicationActive) {
+            return;
         }
+        if (!IosController::Instance()->resumeStatusPolling()) {
+            return;
+        }
+        if (!m_checkTimer.isActive()) {
+            m_checkTimer.start();
+        }
+        if (m_connectionState != Vpn::ConnectionState::Connected
+            && m_connectionState != Vpn::ConnectionState::Reconnecting) {
+            setConnectionState(Vpn::ConnectionState::Connected);
+        }
+        QMetaObject::invokeMethod(IosController::Instance(), []() { IosController::Instance()->checkStatus(); },
+                                  Qt::QueuedConnection);
     });
 #endif
 }
@@ -564,11 +569,8 @@ void VpnConnection::appendSplitTunnelingConfig()
             PresetBucket alwaysDirect;
             PresetBucket alwaysVpn;
 
-            QJsonArray presets = QJsonDocument::fromJson(m_settings->splitPresetsCache().toUtf8()).array();
-            const QJsonArray builtinPresets = BuiltinSplitPresets::presets();
-            for (const auto &value : builtinPresets) {
-                presets.append(value);
-            }
+            const QJsonArray presets = BuiltinSplitPresets::mergeWithApi(
+                    QJsonDocument::fromJson(m_settings->splitPresetsCache().toUtf8()).array());
             for (const auto &value : presets) {
                 const QJsonObject preset = value.toObject();
                 const QString id = preset.value("id").toString();

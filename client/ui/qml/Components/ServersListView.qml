@@ -49,7 +49,10 @@ ListViewType {
 
     function flagCountryCode(cc) {
         // backend sometimes sends non-ISO codes
-        const aliases = { "SWE": "SE", "HEL": "FI", "UK": "GB" }
+        const aliases = {
+            "SWE": "SE", "HEL": "FI", "UK": "GB",
+            "EST": "EE", "TLL": "EE", "EESTI": "EE", "ESTONIA": "EE", "TALLINN": "EE"
+        }
         return aliases[cc] !== undefined ? aliases[cc] : cc
     }
 
@@ -308,8 +311,10 @@ ListViewType {
                     sourceSize.height: 48
                     fillMode: Image.PreserveAspectFit
 
+                    source: countryCode !== ""
+                            ? "qrc:/countriesFlags/images/flagKit/" + root.flagCountryCode(countryCode) + ".svg"
+                            : ""
                     visible: countryCode !== "" && status !== Image.Error
-                    source: visible ? "qrc:/countriesFlags/images/flagKit/" + root.flagCountryCode(countryCode) + ".svg" : ""
 
                     layer.enabled: true
                     layer.effect: OpacityMask {
@@ -417,18 +422,14 @@ ListViewType {
                         ServersModel.processedIndex = proxyServersModel.mapToSource(index)
 
                         if (ServersModel.getProcessedServerData("isServerFromGatewayApi")) {
-                            if (ServersModel.getProcessedServerData("isCountrySelectionAvailable")) {
-                                PageController.goToPage(PageEnum.PageSettingsApiAvailableCountries)
-                            } else {
-                                PageController.showBusyIndicator(true)
-                                let result = ApiSettingsController.getAccountInfo(false)
-                                PageController.showBusyIndicator(false)
-                                if (!result) {
-                                    return
-                                }
-
-                                PageController.goToPage(PageEnum.PageSettingsApiServerInfo)
+                            PageController.showBusyIndicator(true)
+                            let result = ApiSettingsController.getAccountInfo(false)
+                            PageController.showBusyIndicator(false)
+                            if (!result) {
+                                return
                             }
+
+                            PageController.goToPage(PageEnum.PageSettingsApiServerInfo)
                         } else {
                             PageController.goToPage(PageEnum.PageSettingsServerInfo)
                         }

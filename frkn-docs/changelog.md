@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-09-26 — split presets: named builtins + API union
+
+- Builtin каталог сервисов с теми же id, что API: `youtube`, `instagram`,
+  `tiktok`, `x`, `facebook`, `whatsapp`, `telegram`, `netflix`, `spotify`,
+  `discord` (+ по-прежнему `builtin-ru-*`, `builtin-ai`).
+- Merge: `domains = unique(builtin ∪ API)` по `id` (`BuiltinSplitPresets::mergeWithApi`);
+  кэш на диске — только ответ API.
+- Дока для бэка: `frkn-docs/split-presets-backend.md` (в т.ч. удалить `twinby`).
+
 ## 2026-07-29 — 4.8.14 (22–23), TestFlight iOS + macOS
 
 ### Серверы и подписка
@@ -18,7 +27,7 @@
 - Флаги стран в списке серверов: роль `countryCode` в ServersModel
   (`server_country_code` → `user_country_code` → `displayInfo.countryCode`),
   SVG из `qrc:/countriesFlags/images/flagKit/<CC>.svg`.
-  Алиасы не-ISO кодов бэка: `SWE→SE`, `HEL→FI`, `UK→GB` (`flagCountryCode()` в ServersListView.qml).
+  Алиасы не-ISO кодов бэка в `CountryCodeRole`: `SWE→SE`, `HEL→FI`, `UK→GB`, `EST/TLL/EESTI/ESTONIA/TALLINN→EE`.
   При отсутствии файла флаг скрыт (без ошибок в лог).
 - Кнопка «Reload all servers from subscription» (Настройки → Application):
   подтверждение-шторка, запрет при активном подключении, busy-индикатор.

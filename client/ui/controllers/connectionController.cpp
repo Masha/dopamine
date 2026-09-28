@@ -37,17 +37,20 @@ void patchAddressInJsonObject(QJsonObject &obj, const QString &ip);
 
 QString patchAddressInConfigString(const QString &configStr, const QString &ip)
 {
-    if (configStr.contains(QStringLiteral("[Interface]"))) {
-        // wg-quick/AWG INI: rewrite only the host part of "Endpoint = host:port"
+    const QString trimmed = configStr.trimmed();
+    if (trimmed.startsWith(QLatin1Char('{'))) {
+        QJsonObject obj = QJsonDocument::fromJson(configStr.toUtf8()).object();
+        if (obj.isEmpty()) {
+            return configStr;
+        }
+        patchAddressInJsonObject(obj, ip);
+        return QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+    }
+    if (trimmed.contains(QStringLiteral("[Interface]"), Qt::CaseInsensitive)) {
         static const QRegularExpression endpointRe(QStringLiteral("(?m)^(\\s*Endpoint\\s*=\\s*)[^:\\s]+(:\\d+\\s*)$"));
         return QString(configStr).replace(endpointRe, QStringLiteral("\\1") + ip + QStringLiteral("\\2"));
     }
-    QJsonObject obj = QJsonDocument::fromJson(configStr.toUtf8()).object();
-    if (obj.isEmpty()) {
-        return configStr;
-    }
-    patchAddressInJsonObject(obj, ip);
-    return QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+    return configStr;
 }
 
 void patchAddressInJsonObject(QJsonObject &obj, const QString &ip)
@@ -259,13 +262,18 @@ ConnectionController::ConnectionController(const QSharedPointer<ServersModel> &s
             if (!m_speedTimer.isValid()) {
                 m_speedTimer.start();
             }
-            if (elapsedMs > 0) {
-                const QString down = formatSpeed(static_cast<qint64>(receivedBytes) * 1000 / elapsedMs);
-                const QString up = formatSpeed(static_cast<qint64>(sentBytes) * 1000 / elapsedMs);
-                if (down != m_downloadSpeed || up != m_uploadSpeed) {
-                    m_downloadSpeed = down;
-                    m_uploadSpeed = up;
-                    emit speedChanged();
+            if (elapsedMs > 0 && elapsedMs <= 5000) {
+                const quint64 downBps = receivedBytes * 1000 / static_cast<quint64>(elapsedMs);
+                const quint64 upBps = sentBytes * 1000 / static_cast<quint64>(elapsedMs);
+                constexpr quint64 kMaxBps = 10ull * 1024 * 1024 * 1024;
+                if (downBps <= kMaxBps && upBps <= kMaxBps) {
+                    const QString down = formatSpeed(static_cast<qint64>(downBps));
+                    const QString up = formatSpeed(static_cast<qint64>(upBps));
+                    if (down != m_downloadSpeed || up != m_uploadSpeed) {
+                        m_downloadSpeed = down;
+                        m_uploadSpeed = up;
+                        emit speedChanged();
+                    }
                 }
             }
         }
@@ -1087,12 +1095,6 @@ void ConnectionController::onConnectionStateChanged(Vpn::ConnectionState state)
         m_isConnectionInProgress = false;
         m_connectionStateText = tr("Connect");
         m_currentEndpoint.clear();
-        if (!m_downloadSpeed.isEmpty() || !m_uploadSpeed.isEmpty()) {
-            m_downloadSpeed.clear();
-            m_uploadSpeed.clear();
-            m_speedTimer.invalidate();
-            emit speedChanged();
-        }
         if (!m_connectionSwitching) {
             m_manualConnectTimer->stop();
         }

@@ -1406,11 +1406,18 @@ bool ApiConfigsController::finishGatewayConfigUpdate(const GatewayConfigUpdate &
     const auto newCountryName = update.newCountryName;
     const auto reloadServiceConfig = update.reloadServiceConfig;
     const auto silent = update.silent;
+    const bool hasUsable = m_serversModel->serverHasUsableConfig(serverIndex);
+    const bool keepLocalQuietly = hasUsable && !reloadServiceConfig && newCountryName.isEmpty();
 
     QJsonObject newServerConfig;
     if (errorCode == ErrorCode::NoError) {
         errorCode = fillServerConfig(update.serviceProtocol, update.protocolData, responseBody, newServerConfig);
         if (errorCode != ErrorCode::NoError) {
+            if (keepLocalQuietly) {
+                qWarning() << "[UPDATE GATEWAY] fillServerConfig failed (" << errorCode
+                           << "), keeping the locally stored config";
+                return true;
+            }
             if (!silent) {
                 emit errorOccurred(errorCode);
             }
@@ -1460,8 +1467,8 @@ bool ApiConfigsController::finishGatewayConfigUpdate(const GatewayConfigUpdate &
             qWarning() << "ApiConfigsController::updateServiceFromGateway: refusing to save an empty"
                           "server config received from the gateway (hostName or containers missing),"
                           "keeping the local one";
-            if (update.isConnectEvent && m_serversModel->serverHasUsableConfig(serverIndex)) {
-                qWarning() << "[UPDATE GATEWAY] connect with the locally stored config despite the poisoned response";
+            if (hasUsable) {
+                qWarning() << "[UPDATE GATEWAY] keeping the locally stored config despite the poisoned response";
                 return true;
             }
             if (!silent) {
@@ -1470,19 +1477,30 @@ bool ApiConfigsController::finishGatewayConfigUpdate(const GatewayConfigUpdate &
             return false;
         }
 
+        if (newServerConfig == serverConfig) {
+            qDebug() << "[UPDATE GATEWAY] config unchanged for server" << serverIndex << ", skipping write";
+            if (reloadServiceConfig) {
+                emit reloadServerFromApiFinished(tr("API config reloaded"));
+            } else if (!newCountryName.isEmpty()) {
+                emit changeApiCountryFinished(tr("Successfully changed the country of connection to %1").arg(newCountryName));
+            } else if (!silent) {
+                emit updateServerFromApiFinished();
+            }
+            return true;
+        }
+
         m_serversModel->editServer(newServerConfig, serverIndex);
         if (reloadServiceConfig) {
             emit reloadServerFromApiFinished(tr("API config reloaded"));
-        } else if (newCountryName.isEmpty()) {
-            emit updateServerFromApiFinished();
-        } else {
+        } else if (!newCountryName.isEmpty()) {
             emit changeApiCountryFinished(tr("Successfully changed the country of connection to %1").arg(newCountryName));
+        } else if (!silent) {
+            emit updateServerFromApiFinished();
         }
         return true;
     } else {
-        // API is down/flapping on connect — use the locally stored config instead of failing
-        if (update.isConnectEvent && m_serversModel->serverHasUsableConfig(serverIndex)) {
-            qWarning() << "[UPDATE GATEWAY] config fetch failed on connect (" << errorCode
+        if (keepLocalQuietly) {
+            qWarning() << "[UPDATE GATEWAY] config fetch failed (" << errorCode
                        << "), falling back to the locally stored config";
             return true;
         }
@@ -1757,7 +1775,6 @@ void ApiConfigsController::revokeShare(const QString &shareToken)
 
 void ApiConfigsController::refreshSubscriptionConfigs()
 {
-    // Throttle: at most once per 6 hours — this runs on every app start.
     const qint64 now = QDateTime::currentSecsSinceEpoch();
     if (now - m_settings->lastSubscriptionRefresh() < 6 * 60 * 60) {
         return;
@@ -1768,12 +1785,13 @@ void ApiConfigsController::refreshSubscriptionConfigs()
     const int serversCount = m_serversModel->getServersCount();
     for (int i = 0; i < serversCount; ++i) {
         const auto apiConfig = m_serversModel->getServerConfig(i).value(configKey::apiConfig).toObject();
-        // only gateway-issued configs can be refreshed; manual/self-hosted ones are skipped.
-        // Shared connections carry no connection_uuid — they refresh through the same
-        // gateway path using their share_token auth_data.
-        if (!apiConfig.value("connection_uuid").toString().isEmpty() || apiConfig.value("shared").toBool()) {
-            m_pendingSubscriptionRefresh.append(i);
+        if (apiConfig.value("connection_uuid").toString().isEmpty() && !apiConfig.value("shared").toBool()) {
+            continue;
         }
+        if (!m_serversModel->serverHasUsableConfig(i)) {
+            continue;
+        }
+        m_pendingSubscriptionRefresh.append(i);
     }
     if (m_pendingSubscriptionRefresh.isEmpty()) {
         return;
@@ -1920,6 +1938,7 @@ bool ApiConfigsController::isConfigValid()
                        << "configSource:" << static_cast<int>(configSource)
                        << "configVersion:" << serverConfigObject.value("config_version").toInt()
                        << "hasInstalledContainers:" << m_serversModel->data(serverIndex, ServersModel::Roles::HasInstalledContainers).toBool()
+                       << "hasUsableConfig:" << m_serversModel->serverHasUsableConfig(serverIndex)
                        << "apiConfig keys:" << serverConfigObject.value(configKey::apiConfig).toObject().keys()
                        << "authData keys:" << serverConfigObject.value(configKey::authData).toObject().keys();
 
@@ -1927,27 +1946,21 @@ bool ApiConfigsController::isConfigValid()
         && !m_serversModel->data(serverIndex, ServersModel::Roles::HasInstalledContainers).toBool()) {
         m_serversModel->removeApiConfig(serverIndex);
         return updateServiceFromTelegram(serverIndex);
-    } else if (configSource == apiDefs::ConfigSource::AmneziaGateway
-               && !m_serversModel->serverHasUsableConfig(serverIndex)) {
-        // HasInstalledContainers is not a reliable signal here: the gateway import
-        // creates the container entry even when the protocol config itself was never
-        // fetched (or a poisoned empty one was saved) — check for actual config content
-        qDebug() << "[IS CONFIG VALID] updating gateway config";
-        return updateServiceFromGateway(serverIndex, "", "");
-    } else if (configSource && m_serversModel->isApiKeyExpired(serverIndex)) {
-        qDebug() << "[IS CONFIG VALID] updating by expires_at event";
-        if (configSource == apiDefs::ConfigSource::AmneziaGateway) {
-            if (m_serversModel->serverHasUsableConfig(serverIndex)) {
-                // don't block the connect on an API call when a usable config is already
-                // stored — connect with it even if expires_at has passed
-                qDebug() << "[IS CONFIG VALID] expired api key, connecting with the locally stored config";
-                return true;
-            }
-            return updateServiceFromGateway(serverIndex, "", "");
-        } else {
-            m_serversModel->removeApiConfig(serverIndex);
-            return updateServiceFromTelegram(serverIndex);
+    }
+
+    if (configSource == apiDefs::ConfigSource::AmneziaGateway) {
+        if (m_serversModel->serverHasUsableConfig(serverIndex)) {
+            return true;
         }
+        qDebug() << "[IS CONFIG VALID] no local gateway config — skip fetch, ask the user to reload";
+        emit errorOccurred(ErrorCode::ApiLocalConfigMissingError);
+        return false;
+    }
+
+    if (configSource && m_serversModel->isApiKeyExpired(serverIndex)) {
+        qDebug() << "[IS CONFIG VALID] updating by expires_at event";
+        m_serversModel->removeApiConfig(serverIndex);
+        return updateServiceFromTelegram(serverIndex);
     }
     return true;
 }

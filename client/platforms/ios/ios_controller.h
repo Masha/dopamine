@@ -59,6 +59,8 @@ public:
     void getBackendLogs(std::function<void(const QString &)> &&callback);
     void checkStatus();
     void clearStatusRequest();
+    bool isTunnelUp() const;
+    bool resumeStatusPolling();
 
     bool shareText(const QStringList &filesToSend);
     QString openFile();

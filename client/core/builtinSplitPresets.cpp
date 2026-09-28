@@ -1,12 +1,13 @@
 #include "builtinSplitPresets.h"
 
+#include <QHash>
 #include <QJsonObject>
 #include <QObject>
+#include <QSet>
+#include <QStringList>
 
 namespace
 {
-    // RU services reachable only from russian IPs — route outside the VPN.
-    // Source: https://github.com/amnezia-vpn/unblock-lists-ru (to_ru.csv)
     const char *const kRuDirectSubnets[] = {
         "195.178.108.0/23", "91.215.36.0/22",   "195.209.150.0/24", "31.13.32.0/19",    "37.230.240.0/24",
         "62.117.64.0/18",   "77.108.64.0/18",   "82.138.0.0/18",    "87.245.128.0/18",  "94.79.0.0/18",
@@ -40,8 +41,6 @@ namespace
         "185.73.192.0/20",
     };
 
-    // Services blocked in RF (Meta etc.) — route via the VPN.
-    // Source: https://github.com/amnezia-vpn/unblock-lists-ru (from_ru.csv)
     const char *const kRuVpnSubnets[] = {
         "1.1.1.0/24",         "1.0.0.0/24",       "31.13.0.0/16",      "157.240.0.0/16",    "108.174.0.0/16",
         "69.63.0.0/16",       "66.220.144.0/20",  "179.60.192.0/22",   "103.4.96.0/22",     "45.64.40.0/22",
@@ -85,11 +84,48 @@ namespace
         }
         return domains;
     }
-} // namespace
 
-// Same shape as the API catalog entries so both consumers (SplitPresetsModel
-// for the UI, vpnconnection for the connect-time flattening) can treat the
-// builtin presets exactly like fetched ones.
+    QJsonObject makePreset(const QString &id, const QString &name, const QStringList &domains,
+                           const QString &description = QString())
+    {
+        QJsonObject preset;
+        preset.insert(QStringLiteral("id"), id);
+        preset.insert(QStringLiteral("name"), name);
+        if (!description.isEmpty()) {
+            preset.insert(QStringLiteral("description"), description);
+        }
+        preset.insert(QStringLiteral("domains"), QJsonArray::fromStringList(domains));
+        return preset;
+    }
+
+    QStringList domainsFromJson(const QJsonArray &domains)
+    {
+        QStringList out;
+        out.reserve(domains.size());
+        for (const auto &value : domains) {
+            const QString entry = value.toString();
+            if (!entry.isEmpty()) {
+                out.append(entry);
+            }
+        }
+        return out;
+    }
+
+    QStringList unionDomains(const QStringList &base, const QStringList &extra)
+    {
+        QStringList out = base;
+        QSet<QString> seen(base.begin(), base.end());
+        for (const QString &entry : extra) {
+            if (entry.isEmpty() || seen.contains(entry)) {
+                continue;
+            }
+            seen.insert(entry);
+            out.append(entry);
+        }
+        return out;
+    }
+}
+
 QJsonArray BuiltinSplitPresets::presets()
 {
     QJsonArray result;
@@ -98,43 +134,125 @@ QJsonArray BuiltinSplitPresets::presets()
 #include "ruServicesDomains.inc"
     };
 
-    QJsonObject ruDirect;
-    ruDirect.insert("id", QStringLiteral("builtin-ru-direct"));
-    ruDirect.insert("name", QObject::tr("RU services"));
     QJsonArray ruDirectDomains = subnetsJson(kRuDirectSubnets, sizeof(kRuDirectSubnets) / sizeof(kRuDirectSubnets[0]));
     for (const QString &domain : ruDirectExtraDomains) {
         ruDirectDomains.append(domain);
     }
-    ruDirect.insert("domains", ruDirectDomains);
+    QJsonObject ruDirect;
+    ruDirect.insert(QStringLiteral("id"), QStringLiteral("builtin-ru-direct"));
+    ruDirect.insert(QStringLiteral("name"), QObject::tr("RU services"));
+    ruDirect.insert(QStringLiteral("domains"), ruDirectDomains);
     result.append(ruDirect);
 
     const QStringList ruBankingDomains = {
 #include "ruBankingDomains.inc"
     };
+    result.append(makePreset(QStringLiteral("builtin-ru-banking"), QObject::tr("Online Banking"), ruBankingDomains));
 
-    QJsonObject ruBanking;
-    ruBanking.insert("id", QStringLiteral("builtin-ru-banking"));
-    ruBanking.insert("name", QObject::tr("Online Banking"));
-    ruBanking.insert("domains", QJsonArray::fromStringList(ruBankingDomains));
-    result.append(ruBanking);
-
-    QJsonObject ruVpn;
-    ruVpn.insert("id", QStringLiteral("builtin-ru-vpn"));
-    ruVpn.insert("name", QObject::tr("Blocked in RU"));
-    ruVpn.insert("domains", subnetsJson(kRuVpnSubnets, sizeof(kRuVpnSubnets) / sizeof(kRuVpnSubnets[0])));
-    result.append(ruVpn);
+    result.append(makePreset(QStringLiteral("builtin-ru-vpn"), QObject::tr("Blocked in RU"),
+                             domainsFromJson(subnetsJson(kRuVpnSubnets, sizeof(kRuVpnSubnets) / sizeof(kRuVpnSubnets[0])))));
 
     const QStringList aiDomains = {
 #include "aiServicesDomains.inc"
     };
+    result.append(makePreset(QStringLiteral("builtin-ai"), QObject::tr("AI"), aiDomains,
+                             QObject::tr("ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Grok")));
 
-    QJsonObject ai;
-    ai.insert("id", QStringLiteral("builtin-ai"));
-    ai.insert("name", QObject::tr("AI"));
-    ai.insert("description",
-              QObject::tr("ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Grok"));
-    ai.insert("domains", QJsonArray::fromStringList(aiDomains));
-    result.append(ai);
+    const QStringList youtubeDomains = {
+#include "youtubeDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("youtube"), QStringLiteral("YouTube"), youtubeDomains));
 
+    const QStringList instagramDomains = {
+#include "instagramDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("instagram"), QStringLiteral("Instagram"), instagramDomains));
+
+    const QStringList tiktokDomains = {
+#include "tiktokDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("tiktok"), QStringLiteral("TikTok"), tiktokDomains));
+
+    const QStringList xDomains = {
+#include "xDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("x"), QStringLiteral("X"), xDomains));
+
+    const QStringList facebookDomains = {
+#include "facebookDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("facebook"), QStringLiteral("Facebook"), facebookDomains));
+
+    const QStringList whatsappDomains = {
+#include "whatsappDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("whatsapp"), QStringLiteral("WhatsApp"), whatsappDomains));
+
+    const QStringList telegramDomains = {
+#include "telegramDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("telegram"), QStringLiteral("Telegram"), telegramDomains));
+
+    const QStringList netflixDomains = {
+#include "netflixDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("netflix"), QStringLiteral("Netflix"), netflixDomains));
+
+    const QStringList spotifyDomains = {
+#include "spotifyDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("spotify"), QStringLiteral("Spotify"), spotifyDomains));
+
+    const QStringList discordDomains = {
+#include "discordDomains.inc"
+    };
+    result.append(makePreset(QStringLiteral("discord"), QStringLiteral("Discord"), discordDomains));
+
+    return result;
+}
+
+QJsonArray BuiltinSplitPresets::mergeWithApi(const QJsonArray &apiPresets)
+{
+    QJsonArray merged = apiPresets;
+    QHash<QString, int> indexById;
+    for (int i = 0; i < merged.size(); ++i) {
+        const QString id = merged.at(i).toObject().value(QStringLiteral("id")).toString();
+        if (!id.isEmpty()) {
+            indexById.insert(id, i);
+        }
+    }
+
+    QJsonArray builtinsOnly;
+    for (const auto &value : presets()) {
+        const QJsonObject builtin = value.toObject();
+        const QString id = builtin.value(QStringLiteral("id")).toString();
+        if (id.isEmpty()) {
+            continue;
+        }
+
+        const auto it = indexById.constFind(id);
+        if (it == indexById.cend()) {
+            builtinsOnly.append(builtin);
+            continue;
+        }
+
+        QJsonObject api = merged.at(*it).toObject();
+        const QStringList unioned = unionDomains(domainsFromJson(builtin.value(QStringLiteral("domains")).toArray()),
+                                                 domainsFromJson(api.value(QStringLiteral("domains")).toArray()));
+        api.insert(QStringLiteral("domains"), QJsonArray::fromStringList(unioned));
+        if (api.value(QStringLiteral("name")).toString().isEmpty()) {
+            api.insert(QStringLiteral("name"), builtin.value(QStringLiteral("name")));
+        }
+        if (api.value(QStringLiteral("description")).toString().isEmpty()
+            && !builtin.value(QStringLiteral("description")).toString().isEmpty()) {
+            api.insert(QStringLiteral("description"), builtin.value(QStringLiteral("description")));
+        }
+        merged.replace(*it, api);
+    }
+
+    QJsonArray result = builtinsOnly;
+    for (const auto &value : merged) {
+        result.append(value);
+    }
     return result;
 }

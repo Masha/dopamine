@@ -460,13 +460,35 @@ void IosController::clearStatusRequest()
     m_statusRequestInFlight = false;
 }
 
+bool IosController::isTunnelUp() const
+{
+    if (!m_currentTunnel) {
+        return false;
+    }
+    const NEVPNStatus status = m_currentTunnel.connection.status;
+    return status == NEVPNStatusConnected || status == NEVPNStatusReasserting;
+}
+
+bool IosController::resumeStatusPolling()
+{
+    if (!isTunnelUp()) {
+        return false;
+    }
+    m_handshakeConfirmed = true;
+    m_handshakeAwaiting = false;
+    m_handshakeRetries = 0;
+    m_statusRequestInFlight = false;
+    return true;
+}
+
 void IosController::checkStatus()
 {
     if (!m_currentTunnel) {
         return;
     }
 
-    if (m_currentTunnel.connection.status != NEVPNStatusConnected) {
+    const NEVPNStatus tunnelStatus = m_currentTunnel.connection.status;
+    if (tunnelStatus != NEVPNStatusConnected && tunnelStatus != NEVPNStatusReasserting) {
         return;
     }
 
@@ -474,12 +496,13 @@ void IosController::checkStatus()
         // a reply to a request issued before the app was suspended may never
         // arrive — one wedged flag used to kill the speed meter (and the WG
         // handshake watchdog) until a reconnect. Expire stale in-flight marks.
-        if (m_statusRequestTimer.isValid() && m_statusRequestTimer.elapsed() > kStatusRequestTimeoutMs) {
-            m_statusRequestInFlight.store(false);
-            if (m_statusRequestInFlight.exchange(true)) {
-                return; // lost the race with a real reply
-            }
-        } else {
+        const bool stale = !m_statusRequestTimer.isValid()
+                || m_statusRequestTimer.elapsed() > kStatusRequestTimeoutMs;
+        if (!stale) {
+            return;
+        }
+        m_statusRequestInFlight.store(false);
+        if (m_statusRequestInFlight.exchange(true)) {
             return;
         }
     }
@@ -540,7 +563,9 @@ void IosController::checkStatus()
                 }
             }
 
-            emit bytesChanged(rxBytes - m_rxBytes, txBytes - m_txBytes);
+            if (rxBytes >= m_rxBytes && txBytes >= m_txBytes) {
+                emit bytesChanged(rxBytes - m_rxBytes, txBytes - m_txBytes);
+            }
             m_rxBytes = rxBytes;
             m_txBytes = txBytes;
             m_statusRequestInFlight = false;
@@ -672,7 +697,7 @@ void IosController::vpnStatusDidChange(void *pNotification)
                     m_handshakeTimer.restart();
                 }
             }
-        } else if (session.status != NEVPNStatusConnected) {
+        } else if (session.status == NEVPNStatusDisconnected || session.status == NEVPNStatusInvalid) {
             m_handshakeAwaiting = false;
             m_handshakeConfirmed = false;
             m_handshakeRetries = 0;

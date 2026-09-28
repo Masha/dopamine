@@ -26,6 +26,8 @@ Item {
     property string textFieldTextDisabledColor: DopamineStyle.color.mutedGray
 
     property bool textFieldEditable: true
+    property bool multiline: false
+    readonly property string inputText: multiline ? textArea.text : textField.text
 
     property string borderColor: DopamineStyle.color.slateGray
     property string borderFocusedColor: DopamineStyle.color.paleGray
@@ -87,6 +89,7 @@ Item {
                     TextField {
                         id: textField
 
+                        visible: !root.multiline
                         property bool isFocusable: true
 
                         Keys.onTabPressed: {
@@ -142,6 +145,45 @@ Item {
                             backgroud.border.color = getBackgroundBorderColor(root.borderColor)
                         }
                     }
+
+                    TextArea {
+                        id: textArea
+
+                        visible: root.multiline
+                        enabled: root.textFieldEditable
+                        color: root.enabled ? root.textFieldTextColor : root.textFieldTextDisabledColor
+
+                        wrapMode: TextEdit.Wrap
+                        selectByMouse: true
+                        inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
+                        placeholderTextColor: DopamineStyle.color.charcoalGray
+                        selectionColor: DopamineStyle.color.richBrown
+                        selectedTextColor: DopamineStyle.color.paleGray
+
+                        font.pixelSize: 16
+                        font.weight: 400
+                        font.family: "IBM Plex Mono"
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.min(160, Math.max(48, contentHeight))
+                        rightPadding: 88
+                        topPadding: 0
+                        leftPadding: 0
+                        bottomPadding: 0
+
+                        background: Rectangle {
+                            anchors.fill: parent
+                            color: root.backgroundDisabledColor
+                        }
+
+                        onTextChanged: {
+                            root.errorText = ""
+                        }
+
+                        onActiveFocusChanged: {
+                            backgroud.border.color = getBackgroundBorderColor(root.borderColor)
+                        }
+                    }
                 }
             }
         }
@@ -164,7 +206,11 @@ Item {
         hoverEnabled: true
 
         onPressed: function(mouse) {
-            textField.forceActiveFocus()
+            if (root.multiline) {
+                textArea.forceActiveFocus()
+            } else {
+                textField.forceActiveFocus()
+            }
             mouse.accepted = false
 
             backgroud.border.color = getBackgroundBorderColor(root.borderColor)
@@ -181,6 +227,8 @@ Item {
     }
 
     BasicButtonType {
+        id: insertButton
+
         visible: (root.buttonText !== "") || (root.buttonImageSource !== "")
 
         focusPolicy: Qt.NoFocus
@@ -188,11 +236,11 @@ Item {
         leftImageSource: root.buttonImageSource
 
         anchors.top: content.top
-        anchors.bottom: content.bottom
+        anchors.bottom: root.multiline ? undefined : content.bottom
         anchors.right: content.right
 
-        height: content.implicitHeight
-        width: content.implicitHeight
+        height: root.multiline ? implicitHeight : content.implicitHeight
+        width: root.multiline ? implicitWidth : content.implicitHeight
         squareLeftSide: true
 
         clickedFunc: function() {
@@ -202,8 +250,15 @@ Item {
         }
     }
 
+    function insertFromClipboard() {
+        var field = root.multiline ? textArea : textField
+        field.text = ""
+        field.paste()
+    }
+
     function getBackgroundBorderColor(noneFocusedColor) {
-        return textField.focus ? root.borderFocusedColor : noneFocusedColor
+        var focused = root.multiline ? textArea.focus : textField.focus
+        return focused ? root.borderFocusedColor : noneFocusedColor
     }
 
     Keys.onEnterPressed: {

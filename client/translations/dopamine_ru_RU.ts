@@ -79,8 +79,8 @@
         <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1009"/>
         <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1246"/>
         <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1271"/>
-        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1532"/>
-        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1629"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1550"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1647"/>
         <source>%1 installed successfully.</source>
         <translation>%1 установлено успешно.</translation>
     </message>
@@ -90,17 +90,19 @@
         <translation>Подписка успешно восстановлена.</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1475"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1483"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1494"/>
         <source>API config reloaded</source>
         <translation>Конфигурация API перезагружена</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1479"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1485"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1496"/>
         <source>Successfully changed the country of connection to %1</source>
         <translation>Страна подключения изменена на %1</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1607"/>
+        <location filename="../ui/controllers/api/apiConfigsController.cpp" line="1625"/>
         <source>Shared connection</source>
         <translation>Общее подключение</translation>
     </message>
@@ -176,18 +178,18 @@
  Пожалуйста, установите протокол</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="555"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1042"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="560"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1047"/>
         <source>Connecting...</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1047"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1052"/>
         <source>Connected</source>
         <translation>Подключено</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1108"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1107"/>
         <source>Preparing...</source>
         <translation>Подготовка...</translation>
     </message>
@@ -208,31 +210,31 @@
         <translation type="vanished">не удалось создать конфигурацию</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1077"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1082"/>
         <source>Reconnecting...</source>
         <translation>Переподключение...</translation>
     </message>
     <message>
         <location filename="../ui/controllers/connectionController.h" line="187"/>
         <location filename="../ui/controllers/connectionController.cpp" line="224"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="837"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="880"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="958"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="984"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1024"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1088"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1113"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1120"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="842"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="885"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="963"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="989"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1029"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1093"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1112"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1119"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1103"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1102"/>
         <source>Disconnecting...</source>
         <translation>Отключение...</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="711"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="716"/>
         <source>Searching
 for the best server...</source>
         <translation>Поиск
@@ -623,7 +625,7 @@ Already installed containers were found on the server. All installed containers 
         <translation>Dev-шлюз включён</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageHome.qml" line="313"/>
+        <location filename="../ui/qml/Pages2/PageHome.qml" line="314"/>
         <source>Split tunneling</source>
         <translation>Раздельное туннелирование</translation>
     </message>
@@ -1590,19 +1592,16 @@ Already installed containers were found on the server. All installed containers 
 <context>
     <name>PageSettingsApiAvailableCountries</name>
     <message>
-        <location filename="../ui/qml/Pages2/PageSettingsApiAvailableCountries.qml" line="84"/>
         <source>Location for connection</source>
-        <translation>Локация для подключения</translation>
+        <translation type="vanished">Локация для подключения</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageSettingsApiAvailableCountries.qml" line="123"/>
         <source>Unable change server location while trying to make an active connection</source>
-        <translation>Невозможно сменить локацию сервера в процессе подключения</translation>
+        <translation type="vanished">Невозможно сменить локацию сервера в процессе подключения</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageSettingsApiAvailableCountries.qml" line="127"/>
         <source>Unable change server location while there is an active connection</source>
-        <translation>Невозможно сменить локацию сервера во время активного подключения</translation>
+        <translation type="vanished">Невозможно сменить локацию сервера во время активного подключения</translation>
     </message>
 </context>
 <context>
@@ -3155,7 +3154,7 @@ Already installed containers were found on the server. All installed containers 
         <translation type="vanished">мимо VPN</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageSettingsSplitPresets.qml" line="119"/>
+        <location filename="../ui/qml/Pages2/PageSettingsSplitPresets.qml" line="120"/>
         <source>No services available yet. They will appear after the subscription sync.</source>
         <translation>Сервисы пока недоступны. Они появятся после синхронизации подписки.</translation>
     </message>
@@ -3545,13 +3544,13 @@ Already installed containers were found on the server. All installed containers 
     </message>
     <message>
         <location filename="../ui/qml/Pages2/PageSetupWizardConfigSource.qml" line="232"/>
-        <source>Insert the key, add a configuration file or scan the QR-code</source>
-        <translation>Введите ключ, добавьте файл конфигурации или отсканируйте QR-код.</translation>
+        <source>Insert a key or a WireGuard/Amnezia config, add a file, or scan the QR-code</source>
+        <translation>Вставьте ключ или конфиг WireGuard/Amnezia, добавьте файл или отсканируйте QR-код</translation>
     </message>
     <message>
         <location filename="../ui/qml/Pages2/PageSetupWizardConfigSource.qml" line="242"/>
-        <source>Insert key</source>
-        <translation>Вставьте ключ</translation>
+        <source>Key or config</source>
+        <translation>Ключ или конфиг</translation>
     </message>
     <message>
         <location filename="../ui/qml/Pages2/PageSetupWizardConfigSource.qml" line="243"/>
@@ -3675,8 +3674,8 @@ Already installed containers were found on the server. All installed containers 
     </message>
     <message>
         <location filename="../ui/qml/Pages2/PageSetupWizardConfigSource.qml" line="87"/>
-        <source>Unrecognized input — paste an activation key, frkn:// link, subscription UUID or vless:// configuration</source>
-        <translation>Не удалось распознать ввод — вставьте ключ активации, frkn:// ссылку, UUID подписки или vless:// конфигурацию</translation>
+        <source>Unrecognized input — paste an activation key, frkn:// link, subscription UUID, vless:// configuration, or a WireGuard/Amnezia config</source>
+        <translation>Не удалось распознать ввод — вставьте ключ активации, frkn:// ссылку, UUID подписки, vless:// конфигурацию или конфиг WireGuard/Amnezia</translation>
     </message>
 </context>
 <context>
@@ -4480,34 +4479,34 @@ Already installed containers were found on the server. All installed containers 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../core/builtinSplitPresets.cpp" line="103"/>
+        <location filename="../core/builtinSplitPresets.cpp" line="143"/>
         <source>RU services</source>
         <translation>RU-сервисы</translation>
     </message>
     <message>
-        <location filename="../core/builtinSplitPresets.cpp" line="117"/>
+        <location filename="../core/builtinSplitPresets.cpp" line="150"/>
         <source>Online Banking</source>
         <translation>Онлайн-банкинг</translation>
     </message>
     <message>
-        <location filename="../core/builtinSplitPresets.cpp" line="123"/>
+        <location filename="../core/builtinSplitPresets.cpp" line="152"/>
         <source>Blocked in RU</source>
         <translation>Заблокированные в РФ</translation>
     </message>
     <message>
-        <location filename="../core/builtinSplitPresets.cpp"/>
+        <location filename="../core/builtinSplitPresets.cpp" line="158"/>
         <source>AI</source>
         <translation>AI</translation>
     </message>
     <message>
-        <location filename="../core/builtinSplitPresets.cpp"/>
+        <location filename="../core/builtinSplitPresets.cpp" line="159"/>
         <source>ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Grok</source>
         <translation>ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Grok</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="76"/>
-        <source>The server did not respond in time. It may be unreachable from your network — try another server or protocol.</source>
-        <translation>Сервер не ответил вовремя. Возможно, он недоступен из вашей сети — попробуйте другой сервер или протокол.</translation>
+        <location filename="../core/errorstrings.cpp" line="81"/>
+        <source>The server did not respond in time. Try another server, or open the server card and tap Reload API config.</source>
+        <translation>Сервер не ответил вовремя. Попробуйте другой сервер или откройте карточку сервера и нажмите «Перезагрузить конфигурацию API».</translation>
     </message>
     <message>
         <location filename="../core/errorstrings.cpp" line="11"/>
@@ -4609,7 +4608,7 @@ Already installed containers were found on the server. All installed containers 
         <translation>Данная конфигурация уже была добавлена в приложение</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="91"/>
+        <location filename="../core/errorstrings.cpp" line="99"/>
         <source>ErrorCode: %1. </source>
         <translation>Код ошибки: %1. </translation>
     </message>
@@ -4788,37 +4787,42 @@ Already installed containers were found on the server. All installed containers 
         <translation>Невозможно обработать покупку</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="79"/>
+        <location filename="../core/errorstrings.cpp" line="75"/>
+        <source>No VPN configuration on this server. Open the server card and tap Reload API config.</source>
+        <translation>На этом сервере нет VPN-конфигурации. Откройте карточку сервера и нажмите «Перезагрузить конфигурацию API».</translation>
+    </message>
+    <message>
+        <location filename="../core/errorstrings.cpp" line="87"/>
         <source>QFile error: The file could not be opened</source>
         <translation>Ошибка QFile: не удалось открыть файл</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="80"/>
+        <location filename="../core/errorstrings.cpp" line="88"/>
         <source>QFile error: An error occurred when reading from the file</source>
         <translation>Ошибка QFile: произошла ошибка при чтении из файла</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="81"/>
+        <location filename="../core/errorstrings.cpp" line="89"/>
         <source>QFile error: The file could not be accessed</source>
         <translation>Ошибка QFile: не удалось получить доступ к файлу</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="82"/>
+        <location filename="../core/errorstrings.cpp" line="90"/>
         <source>QFile error: An unspecified error occurred</source>
         <translation>Ошибка QFile: произошла неизвестная ошибка</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="83"/>
+        <location filename="../core/errorstrings.cpp" line="91"/>
         <source>QFile error: A fatal error occurred</source>
         <translation>Ошибка QFile: произошла фатальная ошибка</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="84"/>
+        <location filename="../core/errorstrings.cpp" line="92"/>
         <source>QFile error: The operation was aborted</source>
         <translation>Ошибка QFile: операция была прервана</translation>
     </message>
     <message>
-        <location filename="../core/errorstrings.cpp" line="88"/>
+        <location filename="../core/errorstrings.cpp" line="96"/>
         <source>Internal error</source>
         <translation>Внутренняя ошибка</translation>
     </message>
@@ -5486,38 +5490,38 @@ This means that AmneziaWG keeps the fast performance of the original while addin
 <context>
     <name>ServersListView</name>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="58"/>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="107"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="61"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="110"/>
         <source>All</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="110"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="113"/>
         <source>White Elephants</source>
         <translation>Белые Слоны</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="113"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="116"/>
         <source>Regular</source>
         <translation>Основной</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="116"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="119"/>
         <source>Reverse</source>
         <translation>Обратный</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="397"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="402"/>
         <source>offline</source>
         <translation>офлайн</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="219"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="222"/>
         <source>Auto-select</source>
         <translation>Автовыбор</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Components/ServersListView.qml" line="220"/>
+        <location filename="../ui/qml/Components/ServersListView.qml" line="223"/>
         <source>Fastest available server</source>
         <translation>Самый быстрый доступный сервер</translation>
     </message>
@@ -5685,7 +5689,7 @@ This means that AmneziaWG keeps the fast performance of the original while addin
 <context>
     <name>VpnConnection</name>
     <message>
-        <location filename="../vpnconnection.cpp" line="782"/>
+        <location filename="../vpnconnection.cpp" line="784"/>
         <source>Mbps</source>
         <translation>Мбит/с</translation>
     </message>

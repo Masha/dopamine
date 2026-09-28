@@ -71,9 +71,17 @@ QString errorString(ErrorCode code) {
     case (ErrorCode::ApiUpdateRequestError): errorMessage = QObject::tr("Please update the application to use this feature"); break;
     case (ErrorCode::ApiSubscriptionExpiredError): errorMessage = QObject::tr("Your FRKN Premium subscription has expired.\n Please check your email for renewal instructions.\n If you haven't received an email, please contact our support."); break;
     case (ErrorCode::ApiPurchaseError): errorMessage = QObject::tr("Unable to process purchase"); break;
+    case (ErrorCode::ApiLocalConfigMissingError):
+        errorMessage = QObject::tr(
+                "No VPN configuration on this server. Open the server card and tap Reload API config.");
+        break;
 
     // connection errors
-    case (ErrorCode::ServerConnectionTimeoutError): errorMessage = QObject::tr("The server did not respond in time. It may be unreachable from your network — try another server or protocol."); break;
+    case (ErrorCode::ServerConnectionTimeoutError):
+        errorMessage = QObject::tr(
+                "The server did not respond in time. Try another server, or open the server card and tap Reload API "
+                "config.");
+        break;
 
     // QFile errors
     case(ErrorCode::OpenError): errorMessage = QObject::tr("QFile error: The file could not be opened"); break;

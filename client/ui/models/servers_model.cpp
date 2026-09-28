@@ -36,6 +36,22 @@ namespace
         }
         return normalized;
     }
+
+    QString flagCountryCode(QString countryCode)
+    {
+        countryCode = countryCode.trimmed().toUpper();
+        static const QHash<QString, QString> aliases {
+            { QStringLiteral("SWE"), QStringLiteral("SE") },
+            { QStringLiteral("HEL"), QStringLiteral("FI") },
+            { QStringLiteral("UK"), QStringLiteral("GB") },
+            { QStringLiteral("EST"), QStringLiteral("EE") },
+            { QStringLiteral("TLL"), QStringLiteral("EE") },
+            { QStringLiteral("EESTI"), QStringLiteral("EE") },
+            { QStringLiteral("ESTONIA"), QStringLiteral("EE") },
+            { QStringLiteral("TALLINN"), QStringLiteral("EE") },
+        };
+        return aliases.value(countryCode, countryCode);
+    }
 }
 
 ServersModel::ServersModel(std::shared_ptr<Settings> settings, QObject *parent) : m_settings(settings), QAbstractListModel(parent)
@@ -207,7 +223,7 @@ QVariant ServersModel::data(const QModelIndex &index, int role) const
         if (countryCode.isEmpty()) {
             countryCode = server.value(QStringLiteral("displayInfo")).toObject().value(QStringLiteral("countryCode")).toString();
         }
-        return countryCode.toUpper();
+        return flagCountryCode(countryCode);
     }
     case CountryNameRole: {
         // human-readable country without the protocol suffix — the server list
@@ -1117,13 +1133,11 @@ void ServersModel::removeApiConfig(const int serverIndex)
 const QString ServersModel::getDefaultServerImagePathCollapsed()
 {
     const auto server = m_servers.at(m_defaultServerIndex).toObject();
-    const auto apiConfig = server.value(configKey::apiConfig).toObject();
-    const auto countryCode = apiConfig.value(configKey::serverCountryCode).toString();
-
+    const auto countryCode = data(m_defaultServerIndex, CountryCodeRole).toString();
     if (countryCode.isEmpty()) {
         return "";
     }
-    return QString("qrc:/countriesFlags/images/flagKit/%1.svg").arg(countryCode.toUpper());
+    return QString("qrc:/countriesFlags/images/flagKit/%1.svg").arg(countryCode);
 }
 
 bool ServersModel::processedServerIsPremium() const

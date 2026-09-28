@@ -36,7 +36,7 @@ Connect in one tap. Free servers, modern anti-censorship protocols, and full con
 ```
 Dopamine is a free, open-source VPN app by FRKN.
 
-Connect in one tap — no registration required. Start with a free trial or enter your subscription key and you're online in seconds.
+Connect in one tap. Enter your subscription key and you're online in seconds.
 
 WHY DOPAMINE
 
@@ -49,7 +49,7 @@ WHY DOPAMINE
 
 PRIVACY FIRST
 
-No accounts required to try, no ads, no trackers. Your connection is yours.
+No ads, no trackers. Your connection is yours.
 
 Subscription options: 1, 3, 6 or 12 months. Payment is charged to your Apple ID at confirmation. The subscription renews automatically unless auto-renew is turned off at least 24 hours before the end of the current period. Manage or cancel anytime in your Apple ID settings.
 
@@ -61,7 +61,7 @@ Privacy Policy: https://frkn.org/privacy-policy/
 ```
 Dopamine — бесплатный VPN с открытым исходным кодом от FRKN.
 
-Подключение в один тап — без регистрации. Начните с бесплатного триала или введите ключ подписки — и вы в сети за секунды.
+Подключение в один тап. Введите ключ подписки — и вы в сети за секунды.
 
 ПОЧЕМУ DOPAMINE
 
@@ -74,7 +74,7 @@ Dopamine — бесплатный VPN с открытым исходным ко�
 
 ПРИВАТНОСТЬ ПРЕЖДЕ ВСЕГО
 
-Не нужен аккаунт, чтобы попробовать. Никакой рекламы и трекеров.
+Никакой рекламы и трекеров.
 
 Варианты подписки: 1, 3, 6 или 12 месяцев. Оплата списывается с вашего Apple ID при подтверждении. Подписка продлевается автоматически, если автопродление не отключено минимум за 24 часа до конца периода. Управление и отмена — в настройках Apple ID.
 
@@ -122,9 +122,9 @@ Tracking: **No** — приложение не трекерит, рекламы 
 
 | Data type | Collect? | Linked to user | Purpose |
 |---|---|---|---|
-| Contact Info → Email Address | Yes (опционально, при триале) | Linked | App Functionality (welcome-письмо) |
+| Contact Info → Email Address | No | — | — |
 | Purchases → Purchase History | Yes | Linked | App Functionality (подписка) |
-| Identifiers → Device ID | Yes (installation UUID) | Linked | App Functionality (дедуп триала) |
+| Identifiers → Device ID | Yes (installation UUID) | Linked | App Functionality |
 | Diagnostics → Crash Data | No | — | — |
 | Usage Data | No | — | — |
 | Everything else | No | — | — |
@@ -138,15 +138,14 @@ Tracking: **No** — приложение не трекерит, рекламы 
 
 **EN:**
 ```
-Dopamine is a VPN client. No account is required for review:
-on the setup screen tap "VPN by FRKN" → "Create trial account" (email field can
-be left empty) — a trial subscription is created instantly.
+Dopamine is a VPN client. On the setup screen tap "VPN by FRKN" and enter the
+subscription ID provided to App Review.
 To test premium: use the sandbox Apple ID — tap the premium service, choose a
 plan and tap "Subscribe Now". Purchases in the review environment are not charged.
 The app uses NetworkExtension (packet-tunnel) to provide the VPN connection.
 ```
 
-**RU-перевод для себя:** ревьюеру не нужен аккаунт — триал создаётся без email;
+**RU-перевод для себя:** ревьюеру нужен готовый ID подписки на экране «VPN by FRKN»;
 премиум проверяется через sandbox; приложение использует NetworkExtension.
 
 ---

@@ -178,18 +178,18 @@
  Будь-ласка, встановіть VPN контейнер</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="560"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1047"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="563"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1050"/>
         <source>Connecting...</source>
         <translation>Підключення...</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1052"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1055"/>
         <source>Connected</source>
         <translation>Підключено</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1107"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1110"/>
         <source>Preparing...</source>
         <translation>Підготовка...</translation>
     </message>
@@ -206,31 +206,31 @@
         <translation type="obsolete">Вибраний протокол не підтримується на цьому пристрої</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1082"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1085"/>
         <source>Reconnecting...</source>
         <translation>Перепідключення...</translation>
     </message>
     <message>
         <location filename="../ui/controllers/connectionController.h" line="187"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="224"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="842"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="885"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="963"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="989"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1029"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1093"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1112"/>
-        <location filename="../ui/controllers/connectionController.cpp" line="1119"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="227"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="845"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="888"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="966"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="992"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1032"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1096"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1115"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1122"/>
         <source>Connect</source>
         <translation>Підключитись</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="1102"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="1105"/>
         <source>Disconnecting...</source>
         <translation>Відключаємось...</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/connectionController.cpp" line="716"/>
+        <location filename="../ui/controllers/connectionController.cpp" line="719"/>
         <source>Searching
 for the best server...</source>
         <translation>Пошук
@@ -380,7 +380,7 @@ Can&apos;t be disabled for current server</source>
 <context>
     <name>ImportController</name>
     <message>
-        <location filename="../ui/controllers/importController.cpp" line="811"/>
+        <location filename="../ui/controllers/importController.cpp" line="824"/>
         <source>Scanned %1 of %2.</source>
         <translation>Відскановано %1 з %2.</translation>
     </message>
@@ -393,18 +393,18 @@ Can&apos;t be disabled for current server</source>
         <translation type="vanished">&lt;br&gt;В імпортованій конфігурації виявлено потенційно небезпечні рядки:</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/importController.cpp" line="921"/>
+        <location filename="../ui/controllers/importController.cpp" line="934"/>
         <source>No valid configurations found at the provided URL</source>
         <translation>За вказаним URL не знайдено дійсних конфігурацій</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/importController.cpp" line="972"/>
-        <location filename="../ui/controllers/importController.cpp" line="995"/>
+        <location filename="../ui/controllers/importController.cpp" line="985"/>
+        <location filename="../ui/controllers/importController.cpp" line="1008"/>
         <source>Failed to fetch configurations: %1</source>
         <translation>Не вдалося отримати конфігурації: %1</translation>
     </message>
     <message>
-        <location filename="../ui/controllers/importController.cpp" line="1001"/>
+        <location filename="../ui/controllers/importController.cpp" line="1014"/>
         <source>Empty response from server</source>
         <translation>Порожня відповідь від сервера</translation>
     </message>
@@ -3345,37 +3345,17 @@ Already installed containers were found on the server. All installed containers 
         <translation>Введіть UUID</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="86"/>
-        <source>No subscription?</source>
-        <translation>Немає підписки?</translation>
-    </message>
-    <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="94"/>
-        <source>Email (optional)</source>
-        <translation>Email (необов&apos;язково)</translation>
-    </message>
-    <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="95"/>
-        <source>For trial activation letter</source>
-        <translation>Для листа з активацією пробного періоду</translation>
-    </message>
-    <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="103"/>
-        <source>Create trial account</source>
-        <translation>Створити пробний акаунт</translation>
-    </message>
-    <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="115"/>
+        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="83"/>
         <source>No subscription selected</source>
         <translation>Підписку не вибрано</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="115"/>
+        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="83"/>
         <source>Subscription: %1</source>
         <translation>Підписка: %1</translation>
     </message>
     <message>
-        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="148"/>
+        <location filename="../ui/qml/Pages2/PageSetupWizardApiServicesList.qml" line="116"/>
         <source>Free</source>
         <translation>Безкоштовно</translation>
     </message>
@@ -5538,7 +5518,7 @@ This means that AmneziaWG keeps the fast performance of the original while addin
 <context>
     <name>TextFieldWithHeaderType</name>
     <message>
-        <location filename="../ui/qml/Controls2/TextFieldWithHeaderType.qml" line="133"/>
+        <location filename="../ui/qml/Controls2/TextFieldWithHeaderType.qml" line="136"/>
         <source>The field can&apos;t be empty</source>
         <translation>Поле не може бути пустим</translation>
     </message>

@@ -74,38 +74,6 @@ PageType {
                 }
             }
 
-            DividerType {
-                Layout.topMargin: 8
-                Layout.bottomMargin: 8
-            }
-
-            ParagraphTextType {
-                Layout.fillWidth: true
-                Layout.rightMargin: 16
-                Layout.leftMargin: 16
-                text: qsTr("No subscription?")
-            }
-
-            TextFieldWithHeaderType {
-                id: trialEmailField
-                Layout.fillWidth: true
-                Layout.rightMargin: 16
-                Layout.leftMargin: 16
-                headerText: qsTr("Email (optional)")
-                textField.placeholderText: qsTr("For trial activation letter")
-            }
-
-            BasicButtonType {
-                Layout.fillWidth: true
-                Layout.rightMargin: 16
-                Layout.leftMargin: 16
-                Layout.bottomMargin: 8
-                text: qsTr("Create trial account")
-                clickedFunc: function() {
-                    ApiConfigsController.createTrial(trialEmailField.textField.text)
-                }
-            }
-
             ParagraphTextType {
                 id: subscriptionStatusLabel
                 Layout.fillWidth: true

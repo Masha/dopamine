@@ -615,56 +615,6 @@ void ApiConfigsController::setImportAllCountries(bool importAll)
     }
 }
 
-bool ApiConfigsController::createTrial(const QString &email, const QString &referralCode)
-{
-    if (QThread::currentThread() != this->thread()) {
-        QMetaObject::invokeMethod(this, [this, email, referralCode]() { createTrial(email, referralCode); }, Qt::QueuedConnection);
-        return true;
-    }
-
-    QJsonObject body;
-    body["trial"] = true;
-    if (!email.isEmpty()) {
-        body["email"] = email;
-    }
-    body["referred_by"] = referralCode.isEmpty() ? QString("WEB") : referralCode;
-    body["language"] = m_settings->getAppLanguage().name().split("_").first();
-    body["os"] = QSysInfo::productType();
-    body["app_version"] = QString(APP_VERSION);
-    body["installation_uuid"] = m_settings->getInstallationUuid(true);
-
-    QNetworkRequest request;
-    request.setUrl(QUrl("https://api.frkn.org/account"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setTransferTimeout(30000);
-
-    QNetworkReply *reply = amnApp->networkManager()->post(request, QJsonDocument(body).toJson());
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        reply->deleteLater();
-
-        QByteArray responseData = reply->readAll();
-        if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "[TRIAL] request failed:" << reply->errorString() << "response:" << responseData;
-            emit errorOccurred(ErrorCode::InternalError);
-            return;
-        }
-
-        QJsonObject response = QJsonDocument::fromJson(responseData).object();
-        QString id = response.value("subscription_id").toString();
-        if (id.isEmpty()) {
-            qWarning() << "[TRIAL] no subscription id in response:" << responseData;
-            emit errorOccurred(ErrorCode::InternalError);
-            return;
-        }
-
-        qDebug() << "[TRIAL] created subscription id:" << id;
-        setSubscriptionId(id);
-    });
-
-    return true;
-}
-
 bool ApiConfigsController::exportVpnKey(const QString &fileName)
 {
     if (fileName.isEmpty()) {

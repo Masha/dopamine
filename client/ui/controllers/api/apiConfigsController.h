@@ -57,7 +57,6 @@ public slots:
     QString getSubscriptionId() const;
     void setSubscriptionId(const QString &subscriptionId);
     Q_INVOKABLE void copySubscriptionIdToClipboard();
-    Q_INVOKABLE bool createTrial(const QString &email, const QString &referralCode = "WEB");
 
     QString getSelectedServerCountryCode() const;
     void setSelectedServerCountryCode(const QString &countryCode);

@@ -4,6 +4,9 @@
 #include <QDebug>
 #include <QNetworkInterface>
 #include <QCoreApplication>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <amnezia_xray.h>
 #include <qdebug.h>
 
@@ -34,6 +37,16 @@ bool Xray::startXray(const QString &cfg)
     auto defaultIface = NetworkUtilities::getGatewayAndIface().second;
 #ifdef Q_OS_LINUX
     m_defaultIfaceName = defaultIface.name().toUtf8();
+
+    // proxy mode over AWG: the client asks for the outbound to go through the
+    // tunnel interface — bind there instead of the default one
+    const QJsonArray outbounds = QJsonDocument::fromJson(cfg.toUtf8()).object().value("outbounds").toArray();
+    const QString wantedIface = outbounds.isEmpty() ? QString()
+            : outbounds.first().toObject().value("streamSettings").toObject()
+                      .value("sockopt").toObject().value("interface").toString();
+    if (!wantedIface.isEmpty()) {
+        m_defaultIfaceName = wantedIface.toUtf8();
+    }
 #else
     m_defaultIfaceIdx = defaultIface.index();
 #endif

@@ -42,6 +42,9 @@ class InterfaceConfig {
   QStringList m_allowedDnsServers;
   bool m_killSwitchEnabled;
   bool m_routeLanThroughVpn = false;
+  // proxy mode: bring the tunnel up but leave system routing/DNS alone,
+  // the client runs a local proxy bound to the interface instead
+  bool m_proxyMode = false;
 #if defined(MZ_ANDROID) || defined(MZ_IOS)
   QString m_installationId;
 #endif

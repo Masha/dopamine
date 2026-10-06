@@ -132,8 +132,10 @@ bool Daemon::activate(const InterfaceConfig& config) {
   }
 
   // Configure routing for excluded addresses.
-  for (const QString& i : config.m_excludedAddresses) {
-    addExclusionRoute(IPAddress(i));
+  if (!config.m_proxyMode) {
+    for (const QString& i : config.m_excludedAddresses) {
+      addExclusionRoute(IPAddress(i));
+    }
   }
 
   // Keep the local network reachable: route RFC1918/link-local around the
@@ -143,7 +145,7 @@ bool Daemon::activate(const InterfaceConfig& config) {
                                               IPAddress("172.16.0.0/12"),
                                               IPAddress("192.168.0.0/16"),
                                               IPAddress("169.254.0.0/16")};
-  if (!config.m_routeLanThroughVpn && !wgutils()->excludeLocalNetworks(kLanRanges)) {
+  if (!config.m_proxyMode && !config.m_routeLanThroughVpn && !wgutils()->excludeLocalNetworks(kLanRanges)) {
     logger.warning() << "Failed to exclude local networks";
   }
 
@@ -157,8 +159,8 @@ bool Daemon::activate(const InterfaceConfig& config) {
     return false;
   }
 
-  // set routing
-  for (const IPAddress& ip : config.m_allowedIPAddressRanges) {
+  // set routing (proxy mode: allowed IPs stay on the peer, no system routes)
+  for (const IPAddress& ip : config.m_proxyMode ? QList<IPAddress>() : config.m_allowedIPAddressRanges) {
     if (!wgutils()->updateRoutePrefix(ip)) {
       logger.debug() << "Routing configuration failed for" << ip.toString();
       return false;
@@ -177,6 +179,9 @@ bool Daemon::activate(const InterfaceConfig& config) {
 }
 
 bool Daemon::maybeUpdateResolvers(const InterfaceConfig& config) {
+  if (config.m_proxyMode) {
+    return true;
+  }
   if ((config.m_hopType == InterfaceConfig::MultiHopExit) ||
       (config.m_hopType == InterfaceConfig::SingleHop)) {
     QList<QHostAddress> resolvers;
@@ -401,6 +406,10 @@ bool Daemon::parseConfig(const QJsonObject& obj, InterfaceConfig& config) {
 
   config.m_killSwitchEnabled = QVariant(obj.value("killSwitchOption").toString()).toBool();
   config.m_routeLanThroughVpn = QVariant(obj.value("routeLanThroughVpn").toString()).toBool();
+  config.m_proxyMode = obj.value("proxyMode").toBool();
+  if (config.m_proxyMode) {
+    config.m_killSwitchEnabled = false;
+  }
 
   if (!obj.value("Jc").isNull()) {
     config.m_junkPacketCount = obj.value("Jc").toString();
@@ -545,7 +554,9 @@ bool Daemon::supportServerSwitching(const InterfaceConfig& config) const {
   const InterfaceConfig& current =
       m_connections.value(config.m_hopType).m_config;
 
-  return current.m_privateKey == config.m_privateKey &&
+  // proxy mode: always re-activate, switchServer() would install routes
+  return !current.m_proxyMode && !config.m_proxyMode &&
+         current.m_privateKey == config.m_privateKey &&
          current.m_deviceIpv4Address == config.m_deviceIpv4Address &&
          current.m_deviceIpv6Address == config.m_deviceIpv6Address &&
          current.m_serverIpv4Gateway == config.m_serverIpv4Gateway &&

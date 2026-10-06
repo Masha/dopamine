@@ -3,18 +3,33 @@
 #include <QProcess>
 #include <QTcpSocket>
 #include <QThread>
+#include <QTcpServer>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 #include "wireguardprotocol.h"
 #include "core/networkUtilities.h"
+#include "core/ipcclient.h"
 
 #include "mozilla/localsocketcontroller.h"
 
 WireguardProtocol::WireguardProtocol(const QJsonObject &configuration, QObject *parent)
     : VpnProtocol(configuration, parent)
 {
+#ifdef Q_OS_LINUX
+    m_proxyMode = configuration.value(config_key::proxyMode).toBool();
+    m_proxyModePort = configuration.value(config_key::proxyModePort)
+                              .toInt(amnezia::protocols::xray::defaultProxyModePort);
+#endif
+
     m_impl.reset(new LocalSocketController());
     connect(m_impl.get(), &ControllerImpl::connected, this,
             [this](const QString &pubkey, const QDateTime &connectionTimestamp) {
+                if (m_proxyMode && !m_proxyXrayRunning && !startProxyXray()) {
+                    stop();
+                    setLastError(ErrorCode::XrayExecutableCrashed);
+                    return;
+                }
                 setConnectionState(Vpn::ConnectionState::Connected);
                 // fresh tunnel = fresh uapi counters, reset the delta baseline
                 m_lastRxBytes = 0;
@@ -82,6 +97,7 @@ WireguardProtocol::~WireguardProtocol()
 
 void WireguardProtocol::stop()
 {
+    stopProxyXray();
     stopMzImpl();
     return;
 }
@@ -107,5 +123,70 @@ ErrorCode WireguardProtocol::stopMzImpl()
 
 ErrorCode WireguardProtocol::start()
 {
+    if (m_proxyMode) {
+        // same check as XrayProtocol: a busy port means another proxy would take the traffic
+        QTcpServer portProbe;
+        if (!portProbe.listen(QHostAddress::LocalHost, m_proxyModePort)) {
+            qCritical() << "Proxy mode port" << m_proxyModePort << "is busy:" << portProbe.errorString();
+            return ErrorCode::ProxyModePortInUse;
+        }
+        portProbe.close();
+    }
     return startMzImpl();
+}
+
+bool WireguardProtocol::startProxyXray()
+{
+    // plain socks5/http inbound -> freedom outbound bound to the tunnel interface;
+    // DNS also goes through the tunnel (xray resolves via the dispatched outbound)
+    QJsonArray dnsServers;
+    for (const auto &key : { config_key::dns1, config_key::dns2 }) {
+        const QString dns = m_rawConfig.value(key).toString();
+        if (!dns.isEmpty()) {
+            dnsServers.append(dns);
+        }
+    }
+
+    QJsonObject inbound;
+    inbound["listen"] = "127.0.0.1";
+    inbound["port"] = m_proxyModePort;
+    inbound["protocol"] = "socks";
+    inbound["settings"] = QJsonObject { { "udp", true } };
+
+    QJsonObject outbound;
+    outbound["protocol"] = "freedom";
+    outbound["settings"] = QJsonObject { { "domainStrategy", "UseIPv4" } };
+    outbound["streamSettings"] = QJsonObject { { "sockopt", QJsonObject { { "interface", "amn0" /* WG_INTERFACE, see daemon/wireguardutils.h */ } } } };
+
+    QJsonObject xrayConfig;
+    xrayConfig["log"] = QJsonObject { { "loglevel", "warning" } };
+    xrayConfig["dns"] = QJsonObject { { "servers", dnsServers } };
+    xrayConfig["inbounds"] = QJsonArray { inbound };
+    xrayConfig["outbounds"] = QJsonArray { outbound };
+
+    return IpcClient::withInterface([&](QSharedPointer<IpcInterfaceReplica> iface) {
+        auto xrayStart = iface->xrayStart(QJsonDocument(xrayConfig).toJson());
+        if (!xrayStart.waitForFinished() || !xrayStart.returnValue()) {
+            qCritical() << "Failed to start xray for AWG proxy mode";
+            return false;
+        }
+        m_proxyXrayRunning = true;
+        qInfo() << "AWG proxy mode: socks5/http on 127.0.0.1:" << m_proxyModePort;
+        return true;
+    }, [] () {
+        return false;
+    });
+}
+
+void WireguardProtocol::stopProxyXray()
+{
+    if (!m_proxyXrayRunning) {
+        return;
+    }
+    m_proxyXrayRunning = false;
+    IpcClient::withInterface([](QSharedPointer<IpcInterfaceReplica> iface) {
+        auto xrayStop = iface->xrayStop();
+        if (!xrayStop.waitForFinished() || !xrayStop.returnValue())
+            qWarning() << "Failed to stop xray";
+    });
 }

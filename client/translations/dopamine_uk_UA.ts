@@ -2499,8 +2499,8 @@ Already installed containers were found on the server. All installed containers 
     </message>
     <message>
         <location filename="../ui/qml/Pages2/PageSettingsConnection.qml" line="114"/>
-        <source>Don&apos;t route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1 (port below, 12334 by default). Xray/VLESS servers only. Applies on the next connection.</source>
-        <translation>Не перенаправляти системний трафік, а лише запустити локальний SOCKS5/HTTP-проксі на 127.0.0.1 (порт нижче, типово 12334). Лише для серверів Xray/VLESS. Застосовується при наступному підключенні.</translation>
+        <source>Don&apos;t route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1 (port below, 12334 by default). Works with Xray/VLESS servers, and with AmneziaWG on Linux. Applies on the next connection.</source>
+        <translation>Не перенаправляти системний трафік, а лише запустити локальний SOCKS5/HTTP-проксі на 127.0.0.1 (порт нижче, типово 12334). Працює із серверами Xray/VLESS, а на Linux і з AmneziaWG. Застосовується при наступному підключенні.</translation>
     </message>
     <message>
         <location filename="../ui/qml/Pages2/PageSettingsConnection.qml" line="134"/>

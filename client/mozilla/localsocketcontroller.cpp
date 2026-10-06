@@ -253,6 +253,10 @@ void LocalSocketController::activate(const QJsonObject &rawConfig) {
 
   json.insert(amnezia::config_key::killSwitchOption, rawConfig.value(amnezia::config_key::killSwitchOption));
   json.insert(amnezia::config_key::routeLanThroughVpn, rawConfig.value(amnezia::config_key::routeLanThroughVpn));
+#ifdef Q_OS_LINUX
+  // proxy mode for AWG is Linux-only: the client binds its local proxy to amn0
+  json.insert(amnezia::config_key::proxyMode, rawConfig.value(amnezia::config_key::proxyMode));
+#endif
 
   if (protocolName == amnezia::config_key::awg) {
     json.insert(amnezia::config_key::junkPacketCount, wgConfig.value(amnezia::config_key::junkPacketCount));

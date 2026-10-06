@@ -26,6 +26,15 @@ public:
     ErrorCode stopMzImpl();
 
 private:
+    // proxy mode (Linux): tunnel without system routes + the service's xray
+    // as a local socks5/http proxy bound to the tunnel interface
+    bool startProxyXray();
+    void stopProxyXray();
+
+    bool m_proxyMode = false;
+    int m_proxyModePort = 0;
+    bool m_proxyXrayRunning = false;
+
     QTimer m_statsTimer;
 
     // the desktop daemon reports CUMULATIVE rx/tx (uapi counters) — keep the

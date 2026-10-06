@@ -111,7 +111,7 @@ PageType {
                 Layout.margins: 16
 
                 text: qsTr("Proxy mode")
-                descriptionText: qsTr("Don't route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1 (port below, 12334 by default). Xray/VLESS servers only. Applies on the next connection.")
+                descriptionText: qsTr("Don't route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1 (port below, 12334 by default). Works with Xray/VLESS servers, and with AmneziaWG on Linux. Applies on the next connection.")
 
                 checked: SettingsController.isProxyMode
                 onToggled: function() {

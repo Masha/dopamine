@@ -48,6 +48,7 @@ QString errorString(ErrorCode code) {
 
     // VPN errors
     case (ErrorCode::AddressPoolError): errorMessage = QObject::tr("VPN pool error: no available addresses"); break;
+    case (ErrorCode::ProxyModePortInUse): errorMessage = QObject::tr("Proxy mode port is already in use by another application (e.g. Hiddify). Close it or change the port in Connection settings"); break;
 
     case (ErrorCode::ImportInvalidConfigError): errorMessage = QObject::tr("The config does not contain any containers and credentials for connecting to the server"); break;
     case (ErrorCode::ImportOpenConfigError): errorMessage = QObject::tr("Unable to open config file"); break;

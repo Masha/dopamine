@@ -88,6 +88,7 @@ namespace amnezia
         OpenSslFailed = 800,
         XrayExecutableCrashed = 803,
         Tun2SockExecutableCrashed = 804,
+        ProxyModePortInUse = 805,
 
         // import and install errors
         ImportInvalidConfigError = 900,

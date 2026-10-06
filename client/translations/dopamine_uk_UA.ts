@@ -4640,6 +4640,11 @@ Already installed containers were found on the server. All installed containers 
         <translation>VPN pool error: no available addresses</translation>
     </message>
     <message>
+        <location filename="../core/errorstrings.cpp" line="50"/>
+        <source>Proxy mode port is already in use by another application (e.g. Hiddify). Close it or change the port in Connection settings</source>
+        <translation>Порт режиму проксі вже зайнятий іншою програмою (наприклад, Hiddify). Закрийте її або змініть порт у налаштуваннях підключення</translation>
+    </message>
+    <message>
         <location filename="../core/errorstrings.cpp" line="53"/>
         <source>Unable to open config file</source>
         <translation>Неможливо відкрити файл конфігурації</translation>

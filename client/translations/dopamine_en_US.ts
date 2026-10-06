@@ -4622,6 +4622,11 @@ Already installed containers were found on the server. All installed containers 
         <translation>VPN pool error: no available addresses</translation>
     </message>
     <message>
+        <location filename="../core/errorstrings.cpp" line="50"/>
+        <source>Proxy mode port is already in use by another application (e.g. Hiddify). Close it or change the port in Connection settings</source>
+        <translation>Proxy mode port is already in use by another application (e.g. Hiddify). Close it or change the port in Connection settings</translation>
+    </message>
+    <message>
         <location filename="../core/errorstrings.cpp" line="52"/>
         <source>The config does not contain any containers and credentials for connecting to the server</source>
         <translation>The config does not contain any containers and credentials for connecting to the server</translation>

@@ -128,8 +128,10 @@ void VpnConnection::onConnectionStateChanged(Vpn::ConnectionState state)
                     qWarning() << "VpnConnection::onConnectionStateChanged: Failed to clear saved routes";
 
 
+                // proxy mode has no TUN: DNS and split routes via the tunnel gateway don't apply
                 if (!ContainerProps::isAwgContainer(container) &&
-                    container != DockerContainer::WireGuard) {
+                    container != DockerContainer::WireGuard &&
+                    !m_vpnConfiguration.value(config_key::proxyMode).toBool()) {
                     QString dns1 = m_vpnConfiguration.value(config_key::dns1).toString();
                     QString dns2 = m_vpnConfiguration.value(config_key::dns2).toString();
 

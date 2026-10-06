@@ -4706,6 +4706,11 @@ Already installed containers were found on the server. All installed containers 
         <translation>Ошибка пула VPN: нет доступных адресов</translation>
     </message>
     <message>
+        <location filename="../core/errorstrings.cpp" line="50"/>
+        <source>Proxy mode port is already in use by another application (e.g. Hiddify). Close it or change the port in Connection settings</source>
+        <translation>Порт режима прокси уже занят другим приложением (например, Hiddify). Закройте его или смените порт в настройках подключения</translation>
+    </message>
+    <message>
         <location filename="../core/errorstrings.cpp" line="53"/>
         <source>Unable to open config file</source>
         <translation>Невозможно открыть файл конфигурации</translation>

@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkInterface>
+#include <QTcpServer>
 #include <QJsonDocument>
 #include <QtCore/qlogging.h>
 #include <QtCore/qobjectdefs.h>
@@ -72,6 +73,18 @@ XrayProtocol::~XrayProtocol()
 ErrorCode XrayProtocol::start()
 {
     qDebug() << "XrayProtocol::start()";
+
+    // xray doesn't report a busy inbound port, it just starts without
+    // listening — another proxy (hiddify uses 12334 too) would silently
+    // take the traffic, so check the port first
+    if (m_proxyMode) {
+        QTcpServer portProbe;
+        if (!portProbe.listen(QHostAddress::LocalHost, m_proxyModePort)) {
+            qCritical() << "Proxy mode port" << m_proxyModePort << "is busy:" << portProbe.errorString();
+            return ErrorCode::ProxyModePortInUse;
+        }
+        portProbe.close();
+    }
 
     return IpcClient::withInterface([&](QSharedPointer<IpcInterfaceReplica> iface) {
         auto xrayStart = iface->xrayStart(QJsonDocument(m_xrayConfig).toJson());

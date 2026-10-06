@@ -470,6 +470,16 @@ void Settings::setProxyMode(bool enabled)
     m_settings.setValue("Conf/proxyMode", enabled);
 }
 
+int Settings::proxyModePort() const
+{
+    return m_settings.value("Conf/proxyModePort", amnezia::protocols::xray::defaultProxyModePort).toInt();
+}
+
+void Settings::setProxyModePort(int port)
+{
+    m_settings.setValue("Conf/proxyModePort", port);
+}
+
 void Settings::setKillSwitchEnabled(bool enabled)
 {
     m_settings.setValue("Conf/killSwitchEnabled", enabled);

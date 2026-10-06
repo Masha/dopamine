@@ -45,11 +45,13 @@ XrayProtocol::XrayProtocol(const QJsonObject &configuration, QObject *parent) : 
     // proxy mode: no TUN/routes, xray just listens on a fixed local port
     // (socks5 + http, like hiddify's mixed port)
     m_proxyMode = configuration.value(amnezia::config_key::proxyMode).toBool();
+    m_proxyModePort = configuration.value(amnezia::config_key::proxyModePort)
+                              .toInt(amnezia::protocols::xray::defaultProxyModePort);
     if (m_proxyMode) {
         QJsonArray inbounds = m_xrayConfig.value(QStringLiteral("inbounds")).toArray();
         QJsonObject inbound = inbounds.isEmpty() ? QJsonObject {} : inbounds.first().toObject();
         inbound[QStringLiteral("listen")] = QStringLiteral("127.0.0.1");
-        inbound[QStringLiteral("port")] = amnezia::protocols::xray::proxyModePort;
+        inbound[QStringLiteral("port")] = m_proxyModePort;
         inbound[QStringLiteral("protocol")] = QStringLiteral("socks");
         inbound[QStringLiteral("settings")] = QJsonObject { { QStringLiteral("udp"), true } };
         if (inbounds.isEmpty()) {
@@ -78,7 +80,7 @@ ErrorCode XrayProtocol::start()
             return ErrorCode::XrayExecutableCrashed;
         }
         if (m_proxyMode) {
-            qInfo() << "Xray proxy mode: socks5/http on 127.0.0.1:" << amnezia::protocols::xray::proxyModePort;
+            qInfo() << "Xray proxy mode: socks5/http on 127.0.0.1:" << m_proxyModePort;
             setConnectionState(Vpn::ConnectionState::Connected);
             return ErrorCode::NoError;
         }

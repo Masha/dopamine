@@ -411,6 +411,20 @@ void SettingsController::toggleProxyMode(bool enable)
     emit proxyModeChanged();
 }
 
+int SettingsController::proxyModePort()
+{
+    return m_settings->proxyModePort();
+}
+
+void SettingsController::setProxyModePort(int port)
+{
+    if (port < 1 || port > 65535 || port == m_settings->proxyModePort()) {
+        return;
+    }
+    m_settings->setProxyModePort(port);
+    emit proxyModePortChanged();
+}
+
 void SettingsController::toggleKillSwitch(bool enable)
 {
     m_settings->setKillSwitchEnabled(enable);

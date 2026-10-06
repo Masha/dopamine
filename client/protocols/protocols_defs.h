@@ -146,6 +146,7 @@ namespace amnezia
         constexpr char routeLanThroughVpn[] = "routeLanThroughVpn";
 
         constexpr char proxyMode[] = "proxyMode";
+        constexpr char proxyModePort[] = "proxyModePort";
 
         constexpr char crc[] = "crc";
 
@@ -182,7 +183,7 @@ namespace amnezia
 
             constexpr char defaultPort[] = "443";
             constexpr char defaultLocalProxyPort[] = "10808";
-            constexpr int proxyModePort = 12334;
+            constexpr int defaultProxyModePort = 12334;
             constexpr char defaultLocalAddr[] = "10.33.0.2";
         }
 

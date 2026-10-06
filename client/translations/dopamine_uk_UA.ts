@@ -2492,6 +2492,21 @@ Already installed containers were found on the server. All installed containers 
         <source>When off, devices in your local network (SSH, printers, shared folders) stay reachable while the VPN is on. Applies on the next connection.</source>
         <translation>Якщо вимкнено, пристрої в локальній мережі (SSH, принтери, спільні папки) лишаються доступними з увімкненим VPN. Застосовується при наступному підключенні.</translation>
     </message>
+    <message>
+        <location filename="../ui/qml/Pages2/PageSettingsConnection.qml" line="113"/>
+        <source>Proxy mode</source>
+        <translation>Режим проксі</translation>
+    </message>
+    <message>
+        <location filename="../ui/qml/Pages2/PageSettingsConnection.qml" line="114"/>
+        <source>Don&apos;t route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1 (port below, 12334 by default). Xray/VLESS servers only. Applies on the next connection.</source>
+        <translation>Не перенаправляти системний трафік, а лише запустити локальний SOCKS5/HTTP-проксі на 127.0.0.1 (порт нижче, типово 12334). Лише для серверів Xray/VLESS. Застосовується при наступному підключенні.</translation>
+    </message>
+    <message>
+        <location filename="../ui/qml/Pages2/PageSettingsConnection.qml" line="134"/>
+        <source>Proxy port</source>
+        <translation>Порт проксі</translation>
+    </message>
 </context>
 <context>
     <name>PageSettingsDns</name>

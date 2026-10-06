@@ -26,6 +26,7 @@ private:
     QList<QHostAddress> m_dnsServers;
     QString m_remoteAddress;
     bool m_proxyMode = false;
+    int m_proxyModePort = 0;
 
     QSharedPointer<IpcProcessInterfaceReplica> m_tun2socksProcess;
 };

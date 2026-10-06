@@ -111,13 +111,36 @@ PageType {
                 Layout.margins: 16
 
                 text: qsTr("Proxy mode")
-                descriptionText: qsTr("Don't route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1:12334. Xray/VLESS servers only. Applies on the next connection.")
+                descriptionText: qsTr("Don't route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1 (port below, 12334 by default). Xray/VLESS servers only. Applies on the next connection.")
 
                 checked: SettingsController.isProxyMode
                 onToggled: function() {
                     if (checked !== SettingsController.isProxyMode) {
                         SettingsController.toggleProxyMode(checked)
                     }
+                }
+            }
+
+            TextFieldWithHeaderType {
+                id: proxyModePortField
+
+                visible: !GC.isMobile() && SettingsController.isProxyMode
+
+                Layout.fillWidth: true
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
+                Layout.bottomMargin: 16
+
+                headerText: qsTr("Proxy port")
+
+                textField.text: SettingsController.proxyModePort
+                textField.validator: IntValidator {
+                    bottom: 1
+                    top: 65535
+                }
+                textField.onEditingFinished: {
+                    SettingsController.proxyModePort = parseInt(textField.text)
+                    textField.text = SettingsController.proxyModePort
                 }
             }
 

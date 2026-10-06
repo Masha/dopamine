@@ -28,6 +28,7 @@ public:
     Q_PROPERTY(bool isKillSwitchEnabled READ isKillSwitchEnabled WRITE toggleKillSwitch NOTIFY killSwitchEnabledChanged)
     Q_PROPERTY(bool isRouteLanThroughVpn READ isRouteLanThroughVpn WRITE toggleRouteLanThroughVpn NOTIFY routeLanThroughVpnChanged)
     Q_PROPERTY(bool isProxyMode READ isProxyMode WRITE toggleProxyMode NOTIFY proxyModeChanged)
+    Q_PROPERTY(int proxyModePort READ proxyModePort WRITE setProxyModePort NOTIFY proxyModePortChanged)
     Q_PROPERTY(bool strictKillSwitchEnabled READ isStrictKillSwitchEnabled WRITE toggleStrictKillSwitch NOTIFY strictKillSwitchEnabledChanged)
 
     Q_PROPERTY(bool isDevModeEnabled READ isDevModeEnabled NOTIFY devModeEnabled)
@@ -99,6 +100,9 @@ public slots:
     bool isProxyMode();
     void toggleProxyMode(bool enable);
 
+    int proxyModePort();
+    void setProxyModePort(int port);
+
     bool isStrictKillSwitchEnabled();
     void toggleStrictKillSwitch(bool enable);
 
@@ -144,6 +148,7 @@ signals:
     void killSwitchEnabledChanged();
     void routeLanThroughVpnChanged();
     void proxyModeChanged();
+    void proxyModePortChanged();
     void strictKillSwitchEnabledChanged(bool enabled);
 
     void restoreBackupFinished();

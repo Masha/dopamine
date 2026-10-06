@@ -301,6 +301,10 @@ public:
     bool isRouteLanThroughVpn() const;
     void setRouteLanThroughVpn(bool enabled);
 
+    // true: don't touch system routing, only expose a local proxy on 127.0.0.1:12334 (Xray only)
+    bool isProxyMode() const;
+    void setProxyMode(bool enabled);
+
     bool isStrictKillSwitchEnabled() const;
     void setStrictKillSwitchEnabled(bool enabled);
 

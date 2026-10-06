@@ -41,6 +41,24 @@ XrayProtocol::XrayProtocol(const QJsonObject &configuration, QObject *parent) : 
         xrayConfiguration = configuration.value(ProtocolProps::key_proto_config_data(Proto::SSXray)).toObject();
     }
     m_xrayConfig = xrayConfiguration;
+
+    // proxy mode: no TUN/routes, xray just listens on a fixed local port
+    // (socks5 + http, like hiddify's mixed port)
+    m_proxyMode = configuration.value(amnezia::config_key::proxyMode).toBool();
+    if (m_proxyMode) {
+        QJsonArray inbounds = m_xrayConfig.value(QStringLiteral("inbounds")).toArray();
+        QJsonObject inbound = inbounds.isEmpty() ? QJsonObject {} : inbounds.first().toObject();
+        inbound[QStringLiteral("listen")] = QStringLiteral("127.0.0.1");
+        inbound[QStringLiteral("port")] = amnezia::protocols::xray::proxyModePort;
+        inbound[QStringLiteral("protocol")] = QStringLiteral("socks");
+        inbound[QStringLiteral("settings")] = QJsonObject { { QStringLiteral("udp"), true } };
+        if (inbounds.isEmpty()) {
+            inbounds.append(inbound);
+        } else {
+            inbounds[0] = inbound;
+        }
+        m_xrayConfig[QStringLiteral("inbounds")] = inbounds;
+    }
 }
 
 XrayProtocol::~XrayProtocol()
@@ -59,6 +77,11 @@ ErrorCode XrayProtocol::start()
             qCritical() << "Failed to start xray";
             return ErrorCode::XrayExecutableCrashed;
         }
+        if (m_proxyMode) {
+            qInfo() << "Xray proxy mode: socks5/http on 127.0.0.1:" << amnezia::protocols::xray::proxyModePort;
+            setConnectionState(Vpn::ConnectionState::Connected);
+            return ErrorCode::NoError;
+        }
         return startTun2Socks();
     }, [] () {
         return ErrorCode::DopamineServiceConnectionFailed;
@@ -69,7 +92,14 @@ void XrayProtocol::stop()
 {
     qDebug() << "XrayProtocol::stop()";
 
-    IpcClient::withInterface([](QSharedPointer<IpcInterfaceReplica> iface) {
+    IpcClient::withInterface([this](QSharedPointer<IpcInterfaceReplica> iface) {
+        if (m_proxyMode) {
+            auto xrayStop = iface->xrayStop();
+            if (!xrayStop.waitForFinished() || !xrayStop.returnValue())
+                qWarning() << "Failed to stop xray";
+            return;
+        }
+
         auto disableKillSwitch = iface->disableKillSwitch();
         if (!disableKillSwitch.waitForFinished() || !disableKillSwitch.returnValue())
             qWarning() << "Failed to disable killswitch";

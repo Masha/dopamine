@@ -400,6 +400,17 @@ void SettingsController::toggleRouteLanThroughVpn(bool enable)
     emit routeLanThroughVpnChanged();
 }
 
+bool SettingsController::isProxyMode()
+{
+    return m_settings->isProxyMode();
+}
+
+void SettingsController::toggleProxyMode(bool enable)
+{
+    m_settings->setProxyMode(enable);
+    emit proxyModeChanged();
+}
+
 void SettingsController::toggleKillSwitch(bool enable)
 {
     m_settings->setKillSwitchEnabled(enable);

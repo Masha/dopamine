@@ -460,6 +460,16 @@ void Settings::setRouteLanThroughVpn(bool enabled)
     m_settings.setValue("Conf/routeLanThroughVpn", enabled);
 }
 
+bool Settings::isProxyMode() const
+{
+    return m_settings.value("Conf/proxyMode", false).toBool();
+}
+
+void Settings::setProxyMode(bool enabled)
+{
+    m_settings.setValue("Conf/proxyMode", enabled);
+}
+
 void Settings::setKillSwitchEnabled(bool enabled)
 {
     m_settings.setValue("Conf/killSwitchEnabled", enabled);

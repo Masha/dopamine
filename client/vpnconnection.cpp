@@ -463,6 +463,7 @@ void VpnConnection::appendKillSwitchConfig()
 {
     m_vpnConfiguration.insert(config_key::killSwitchOption, QVariant(m_settings->isKillSwitchEnabled()).toString());
     m_vpnConfiguration.insert(config_key::routeLanThroughVpn, QVariant(m_settings->isRouteLanThroughVpn()).toString());
+    m_vpnConfiguration.insert(config_key::proxyMode, m_settings->isProxyMode());
     m_vpnConfiguration.insert(config_key::allowedDnsServers, QVariant(m_settings->allowedDnsServers()).toJsonValue());
 }
 

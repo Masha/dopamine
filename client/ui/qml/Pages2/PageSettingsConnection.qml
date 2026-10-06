@@ -98,6 +98,29 @@ PageType {
                 }
             }
 
+            DividerType {
+                visible: !GC.isMobile()
+            }
+
+            SwitcherType {
+                id: proxyModeSwitch
+
+                visible: !GC.isMobile()
+
+                Layout.fillWidth: true
+                Layout.margins: 16
+
+                text: qsTr("Proxy mode")
+                descriptionText: qsTr("Don't route system traffic, only run a local SOCKS5/HTTP proxy on 127.0.0.1:12334. Xray/VLESS servers only. Applies on the next connection.")
+
+                checked: SettingsController.isProxyMode
+                onToggled: function() {
+                    if (checked !== SettingsController.isProxyMode) {
+                        SettingsController.toggleProxyMode(checked)
+                    }
+                }
+            }
+
         }
 
         footer: ColumnLayout { // TODO(CyAn84): move to delegate,add DelegateChooser when have migrated to 6.9

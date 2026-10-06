@@ -8,6 +8,8 @@
 #include "settings.h"
 #include <QtCore/qsharedpointer.h>
 
+class QNetworkAccessManager;
+
 class XrayProtocol : public VpnProtocol
 {
 public:
@@ -20,6 +22,7 @@ public:
 private:
     ErrorCode setupRouting();
     ErrorCode startTun2Socks();
+    void probeProxy();
 
     QJsonObject m_xrayConfig;
     Settings::RouteMode m_routeMode;
@@ -27,6 +30,8 @@ private:
     QString m_remoteAddress;
     bool m_proxyMode = false;
     int m_proxyModePort = 0;
+    bool m_proxyXrayRunning = false;
+    QNetworkAccessManager *m_probeNam = nullptr;
 
     QSharedPointer<IpcProcessInterfaceReplica> m_tun2socksProcess;
 };

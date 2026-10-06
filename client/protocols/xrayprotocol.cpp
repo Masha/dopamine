@@ -10,6 +10,10 @@
 #include <QJsonObject>
 #include <QNetworkInterface>
 #include <QTcpServer>
+#include <QTimer>
+#include <QNetworkAccessManager>
+#include <QNetworkProxy>
+#include <QNetworkReply>
 #include <QJsonDocument>
 #include <QtCore/qlogging.h>
 #include <QtCore/qobjectdefs.h>
@@ -93,8 +97,10 @@ ErrorCode XrayProtocol::start()
             return ErrorCode::XrayExecutableCrashed;
         }
         if (m_proxyMode) {
+            m_proxyXrayRunning = true;
             qInfo() << "Xray proxy mode: socks5/http on 127.0.0.1:" << m_proxyModePort;
             setConnectionState(Vpn::ConnectionState::Connected);
+            probeProxy();
             return ErrorCode::NoError;
         }
         return startTun2Socks();
@@ -109,6 +115,12 @@ void XrayProtocol::stop()
 
     IpcClient::withInterface([this](QSharedPointer<IpcInterfaceReplica> iface) {
         if (m_proxyMode) {
+            // the service runs a single xray: a second stop (from the destructor,
+            // which can run after the next connection already started it) would
+            // kill the new instance
+            if (!m_proxyXrayRunning)
+                return;
+            m_proxyXrayRunning = false;
             auto xrayStop = iface->xrayStop();
             if (!xrayStop.waitForFinished() || !xrayStop.returnValue())
                 qWarning() << "Failed to stop xray";
@@ -157,6 +169,37 @@ void XrayProtocol::stop()
     }
 
     setConnectionState(Vpn::ConnectionState::Disconnected);
+}
+
+// Without a TUN nothing reports traffic, and ConnectionController treats a
+// connection without received bytes as a dead entry address (and cycles to the
+// next one). Prove the path with a request through our own proxy instead.
+void XrayProtocol::probeProxy()
+{
+    if (!m_proxyXrayRunning)
+        return;
+
+    if (!m_probeNam) {
+        m_probeNam = new QNetworkAccessManager(this);
+        m_probeNam->setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QStringLiteral("127.0.0.1"), m_proxyModePort));
+    }
+
+    QNetworkRequest request(QUrl(QStringLiteral("http://cp.cloudflare.com/generate_204")));
+    request.setTransferTimeout(3000);
+    QNetworkReply *reply = m_probeNam->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        if (!m_proxyXrayRunning)
+            return;
+        if (reply->error() == QNetworkReply::NoError) {
+            qDebug() << "Xray proxy mode: probe through the proxy succeeded";
+            // 204 has no body — count the response itself as received traffic
+            setBytesChanged(1, 1);
+        } else {
+            qWarning() << "Xray proxy mode: probe failed:" << reply->errorString();
+            QTimer::singleShot(1000, this, &XrayProtocol::probeProxy);
+        }
+    });
 }
 
 ErrorCode XrayProtocol::startTun2Socks()
